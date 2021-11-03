@@ -1,12 +1,11 @@
-import 'package:demos/components/vote_bar.dart';
+import 'package:demos/components/pool_bar.dart';
 import 'package:demos/utils/util_general.dart';
 import 'package:flutter/material.dart';
 
-class VoteCaption extends StatelessWidget {
-
+class PoolCaption extends StatelessWidget {
   final List<Choice> choices;
 
-  const VoteCaption({Key? key, required this.choices}) : super(key: key);
+  const PoolCaption({Key? key, required this.choices}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -17,11 +16,11 @@ class VoteCaption extends StatelessWidget {
   }
 
   List<Widget> _createChildren() {
-    return List.generate(choices.length, (index) => _captionItem(choices[index], index));
-
+    return List.generate(
+        choices.length, (index) => _captionItem(choices[index], index));
   }
 
-  Widget _captionItem(Choice choice, int index){
+  Widget _captionItem(Choice choice, int index) {
     return Row(
       children: [
         CircleAvatar(
