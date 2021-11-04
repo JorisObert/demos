@@ -1,4 +1,5 @@
 import 'package:demos/providers/pool_provider.dart';
+import 'package:demos/screens/login/login_screen.dart';
 import 'package:demos/screens/main/main_screen.dart';
 import 'package:demos/screens/pools/pools_screen.dart';
 import 'package:flutter/material.dart';
@@ -32,7 +33,7 @@ class _SplashScreenState extends State<SplashScreen> {
     Future.delayed(Duration(milliseconds: _launchTimer), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => MainScreen()),
+        MaterialPageRoute(builder: (context) => LoginScreen()),
       );
     });
 
