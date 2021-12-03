@@ -8,30 +8,42 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SignInButton(
-              Buttons.GoogleDark,
-              onPressed: ()=> SocialLogin.signInWithGoogle(),
+      body: SafeArea(
+        child: Container(
+          alignment: Alignment.center,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.only(top: 32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('Login to vote !', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 32),),
+                _buttonSeparator,
+                Text('create an acount and make your voice count !'),
+                _buttonSeparator,
+                _buttonSeparator,
+                SignInButton(
+                  Buttons.GoogleDark,
+                  onPressed: ()=> SocialLogin.signInWithGoogle(),
+                ),
+                _buttonSeparator,
+                SignInButton(
+                  Buttons.AppleDark,
+                  onPressed: () {},
+                ),
+                _buttonSeparator,
+                SignInButton(
+                  Buttons.Twitter,
+                  onPressed: () {},
+                ),
+                _buttonSeparator,
+                SignInButton(
+                  Buttons.FacebookNew,
+                  onPressed: ()=> SocialLogin.signInWithFacebook(),
+                ),
+
+              ],
             ),
-            _buttonSeparator,
-            SignInButton(
-              Buttons.AppleDark,
-              onPressed: () {},
-            ),
-            _buttonSeparator,
-            SignInButton(
-              Buttons.Twitter,
-              onPressed: () {},
-            ),
-            _buttonSeparator,
-            SignInButton(
-              Buttons.FacebookNew,
-              onPressed: ()=> SocialLogin.signInWithFacebook(),
-            )
-          ],
+          ),
         ),
       ),
     );
