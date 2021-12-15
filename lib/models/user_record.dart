@@ -11,7 +11,7 @@ part 'user_record.g.dart';
 class UserRecord{
 
   @JsonKey(fromJson: dateTimeFromTimestamp, toJson: dateTimeToTimestamp, name: 'last_updated')
-  final DateTime lastUpdated;
+  final DateTime? lastUpdated;
 
   @JsonKey(fromJson: _mapToList)
   final List<UserVote> vote;

@@ -28,7 +28,8 @@ String formatDuration(Duration duration) {
   return '${duration.inSeconds}s';
 }
 
-DateTime dateTimeFromTimestamp(Timestamp timestamp) {
+DateTime? dateTimeFromTimestamp(Timestamp? timestamp) {
+  if(timestamp == null)return null;
   return DateTime.parse(timestamp.toDate().toString());
 }
 

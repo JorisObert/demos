@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 ThemeData appTheme() {
   return ThemeData(
     brightness: Brightness.dark,
-    appBarTheme: AppBarTheme(),
-    primaryColor: Colors.grey.shade900,
-    accentColor: Colors.cyan,
+    accentColor: Colors.amber,
+    canvasColor: Colors.blueGrey.shade900,
+    scaffoldBackgroundColor: Colors.blueGrey.shade900,
     fontFamily: 'Roboto',
   );
 }

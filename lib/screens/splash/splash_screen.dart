@@ -1,3 +1,4 @@
+import 'package:demos/components/app_icon.dart';
 import 'package:demos/providers/pool_provider.dart';
 import 'package:demos/screens/login/login_screen.dart';
 import 'package:demos/screens/main/main_screen.dart';
@@ -33,7 +34,7 @@ class _SplashScreenState extends State<SplashScreen> {
     Future.delayed(Duration(milliseconds: _launchTimer), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => LoginScreen()),
+        MaterialPageRoute(builder: (context) => MainScreen()),
       );
     });
 
@@ -43,10 +44,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        color: Theme.of(context).accentColor,
-        child: _splashBody(),
-      ),
+      body: _splashBody(),
     );
   }
 
@@ -55,7 +53,20 @@ class _SplashScreenState extends State<SplashScreen> {
       child: AnimatedOpacity(
         opacity: _logoOpacity,
         duration: Duration(milliseconds: _logoAnimationDuration),
-        child: Text('DEMOS'),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                AppIcon(size: 128,),
+                Text('DEMOS'),
+              ],
+            ),
+            SizedBox(height: 32,),
+            Text('Make \'em hear your voice !'),
+          ],
+        ),
       ),
     );
   }

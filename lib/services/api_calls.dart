@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:demos/components/pool_bar.dart';
+import 'package:demos/components/pool_item/components/pool_bar.dart';
 import 'package:demos/models/pool.dart';
 import 'package:demos/models/user_record.dart';
 import 'package:demos/models/user_vote.dart';

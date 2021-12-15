@@ -1,5 +1,5 @@
-import 'package:demos/components/lazy_pool_item.dart';
-import 'package:demos/components/pool_item.dart';
+import 'package:demos/components/pool_item/lazy_pool_item.dart';
+import 'package:demos/components/pool_item/pool_item.dart';
 import 'package:demos/models/pool.dart';
 import 'package:demos/models/user_vote.dart';
 import 'package:demos/providers/pool_provider.dart';

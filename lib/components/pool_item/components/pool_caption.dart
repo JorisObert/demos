@@ -1,4 +1,4 @@
-import 'package:demos/components/pool_bar.dart';
+import 'package:demos/components/pool_item/components/pool_bar.dart';
 import 'package:demos/utils/util_general.dart';
 import 'package:flutter/material.dart';
 

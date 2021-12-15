@@ -171,7 +171,7 @@ class _CreatePoolDialogState extends State<CreatePoolDialog> {
                           title: _formKey.currentState?.value['title'],
                           choices: _createMapFromChoices!,
                         countryCode: _userCountryCode,
-                        endDate: _formKey.currentState?.value['end_date'] as DateTime,
+                        endDate: _formKey.currentState?.value['end_date'] as DateTime?,
                         hashtags: _formKey.currentState?.value['hashtags'].toString().split(' '),
                         creator: DemosUser(name: 'Joris Obert', countryCode: 'fr', profilePicURL: 'https://scontent-cdt1-1.xx.fbcdn.net/v/t1.18169-9/11109810_10205447319595079_5685582881904717067_n.jpg?_nc_cat=103&ccb=1-5&_nc_sid=09cbfe&_nc_ohc=FJPiY5AQMZoAX_CBziQ&_nc_ht=scontent-cdt1-1.xx&oh=d96f879396f1fb56c2f4769cec2566f4&oe=6197155F'),
                       );

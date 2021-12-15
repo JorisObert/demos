@@ -21,6 +21,7 @@ class PoolItemTopBar extends StatelessWidget {
           children: [
             CachedNetworkImage(
               imageUrl: pool.creator.profilePicURL ?? 'null',
+
               imageBuilder: (context, imageProvider) => Container(
                 width: 32.0,
                 height: 32.0,
@@ -30,8 +31,9 @@ class PoolItemTopBar extends StatelessWidget {
                       image: imageProvider, fit: BoxFit.cover),
                 ),
               ),
-              placeholder: (context, url) => CircularProgressIndicator(),
-              errorWidget: (context, url, error) => Icon(Icons.error),
+
+              placeholder: (context, url) => SizedBox(height: 32, width: 32,),
+              errorWidget: (context, url, error) => Icon(Icons.person, size: 32,),
             ),
             SizedBox(width: 8.0,),
             Text(pool.creator.name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),),

@@ -1,4 +1,4 @@
-import 'package:demos/components/pool_item.dart';
+import 'package:demos/components/pool_item/pool_item.dart';
 import 'package:demos/models/pool.dart';
 import 'package:demos/providers/pool_provider.dart';
 import 'package:flutter/material.dart';

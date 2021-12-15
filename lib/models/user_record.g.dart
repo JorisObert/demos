@@ -7,7 +7,7 @@ part of 'user_record.dart';
 // **************************************************************************
 
 UserRecord _$UserRecordFromJson(Map<String, dynamic> json) => UserRecord(
-      dateTimeFromTimestamp(json['last_updated'] as Timestamp),
+      dateTimeFromTimestamp(json['last_updated'] as Timestamp?),
       UserRecord._mapToList(json['vote'] as Map<String, dynamic>),
     );
 

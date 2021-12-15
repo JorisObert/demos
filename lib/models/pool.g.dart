@@ -18,7 +18,7 @@ Pool _$PoolFromJson(Map<String, dynamic> json) => Pool(
       isPrivate: json['isPrivate'] as bool? ?? false,
       alert: json['alert'] as int? ?? 0,
       hidden: json['hidden'] as bool? ?? false,
-      endDate: dateTimeFromTimestamp(json['endDate'] as Timestamp),
+      endDate: dateTimeFromTimestamp(json['endDate'] as Timestamp?),
       creator: decodeDemosUserFromJson(json['creator'] as String),
       id: json['id'] as String?,
     );

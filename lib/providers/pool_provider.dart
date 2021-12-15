@@ -1,6 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/src/iterable_extensions.dart';
-import 'package:demos/components/pool_bar.dart';
+import 'package:demos/components/pool_item/components/pool_bar.dart';
 import 'package:demos/models/pool.dart';
 import 'package:demos/models/user_vote.dart';
 import 'package:demos/services/api_calls.dart';
