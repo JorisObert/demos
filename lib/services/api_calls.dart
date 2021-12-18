@@ -1,10 +1,10 @@
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:demos/components/pool_bar.dart';
 import 'package:demos/models/pool.dart';
 import 'package:demos/models/user_record.dart';
 import 'package:demos/models/user_vote.dart';
+import 'package:demos/widgets/pool_item_widget/components/pool_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class ApiCalls {
@@ -19,25 +19,56 @@ class ApiCalls {
 
   static DocumentSnapshot? _lastUserPoolSnapshot;
 
-  static Future<List<Pool>?> getPoolsByNewest(
-      List<UserVote> votesFilter) async {
-    await FirebaseAuth.instance.signInAnonymously();
-
-    Query query = pools;
-
-    if(votesFilter.isNotEmpty){
-      query = query.where(FieldPath.documentId, whereNotIn: votesFilter.map((e) => e.voteId).toList());
+  static Future<List<Pool>?> getPools(
+      {String? lang, bool onlyMine = false}) async {
+    if (FirebaseAuth.instance.currentUser == null) {
+      await FirebaseAuth.instance.signInAnonymously();
     }
-    
-    query = query.where('countryCode', isEqualTo: 'FR');
+
+    Query query;
+    if (onlyMine) {
+      query = await FirebaseFirestore.instance
+          .collectionGroup('votes')
+          .where('userId', isEqualTo: FirebaseAuth.instance.currentUser!.uid);
+
+      if (_lastPoolSnapshot != null) {
+        query = query.startAfterDocument(_lastPoolSnapshot!);
+      }
+
+      var snapshot = await query.limit(2).get();
+
+      if (snapshot.docs.isNotEmpty) {
+        _lastPoolSnapshot = snapshot.docs.last;
+      }
+
+      List<Pool> minePools = [];
+
+      for(var snap in snapshot.docs){
+        var parent = await snap.reference.parent.get();
+        minePools.add(Pool.fromJson(parent.docs.first.data() as Map<String, dynamic>));
+      }
+
+      return minePools;
+
+    } else {
+      query = pools;
+    }
+
+    if (lang != null) {
+      query = query.where(COUNTRY_CODE_FIELD, isEqualTo: lang);
+    }
+
+    query = query.orderBy('endDate', descending: true);
 
     if (_lastPoolSnapshot != null) {
       query = query.startAfterDocument(_lastPoolSnapshot!);
     }
+    
+
 
     var snapshot = await query.limit(2).get();
 
-    if(snapshot.docs.isNotEmpty){
+    if (snapshot.docs.isNotEmpty) {
       _lastPoolSnapshot = snapshot.docs.last;
     }
 
@@ -52,8 +83,9 @@ class ApiCalls {
 
     Query query = pools;
 
-    if(votesFilter.isNotEmpty){
-      query = query.where(FieldPath.documentId, whereIn: votesFilter.map((e) => e.voteId).toList());
+    if (votesFilter.isNotEmpty) {
+      query = query.where(FieldPath.documentId,
+          whereIn: votesFilter.map((e) => e.voteId).toList());
     }
 
     if (_lastUserPoolSnapshot != null) {
@@ -62,7 +94,7 @@ class ApiCalls {
 
     var snapshot = await query.limit(2).get();
 
-    if(snapshot.docs.isNotEmpty){
+    if (snapshot.docs.isNotEmpty) {
       _lastUserPoolSnapshot = snapshot.docs.last;
     }
 
@@ -177,6 +209,7 @@ class ApiCalls {
   static const String DEMOS_USER_COLLECTION = "demos_users";
   static const String POOLS_COLLECTION = "pools";
   static const String VOTES_COLLECTION = "votes";
+
   static const String CHOICES_FIELD = "choices";
   static const String CHOICE_FIELD = "choice";
   static const String USERID_FIELD = "userId";
@@ -185,4 +218,5 @@ class ApiCalls {
   static const String DATE_FIELD = "date";
   static const String END_DATE_FIELD = "endDate";
   static const String LAST_UPDATED_FIELD = "last_updated";
+  static const String COUNTRY_CODE_FIELD = "countryCode";
 }

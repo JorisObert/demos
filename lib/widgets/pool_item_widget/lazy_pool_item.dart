@@ -1,6 +1,7 @@
-import 'package:demos/components/pool_item.dart';
+
 import 'package:demos/models/pool.dart';
 import 'package:demos/providers/pool_provider.dart';
+import 'package:demos/widgets/pool_item_widget/pool_item.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

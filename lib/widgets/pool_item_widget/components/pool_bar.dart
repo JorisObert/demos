@@ -7,16 +7,41 @@ class PoolBar extends StatelessWidget {
   final List<Choice> choices;
   final String voteId;
 
-  const PoolBar({Key? key, required this.choices, required this.voteId})
+  PoolBar({Key? key, required this.choices, required this.voteId})
       : super(key: key);
+
+  ScrollController controller = ScrollController();
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: _createChildren(context),
+      child: NotificationListener<OverscrollNotification>(
+        onNotification: (OverscrollNotification value) {
+          if (value.overscroll < 0 && controller.offset + value.overscroll <= 0) {
+            if (controller.offset != 0) controller.jumpTo(0);
+            return true;
+          }
+          if (controller.offset + value.overscroll >= controller.position.maxScrollExtent) {
+            if (controller.offset != controller.position.maxScrollExtent) controller.jumpTo(controller.position.maxScrollExtent);
+            return true;
+          }
+          controller.jumpTo(controller.offset + value.overscroll);
+          return true;
+        },
+        child: ScrollConfiguration(
+          behavior: ScrollBehavior(),
+          child: GlowingOverscrollIndicator(
+            axisDirection: AxisDirection.down,
+            color: Colors.transparent,
+            child: ListView(
+              controller: controller,
+              shrinkWrap: true,
+
+              children: _createChildren(context),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -25,6 +50,7 @@ class PoolBar extends StatelessWidget {
     return List.generate(choices.length, (index) {
       int nbrVoters = choices[index].nbrVotes;
       double percent = _getFlex(nbrVoters);
+
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0),
         child: Stack(

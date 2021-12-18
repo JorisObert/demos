@@ -3,6 +3,7 @@ import 'package:demos/models/pool.dart';
 import 'package:demos/utils/util_general.dart';
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:demos/utils/constants.dart';
 
 class PoolItemTopBar extends StatelessWidget {
   const PoolItemTopBar({Key? key, required this.pool}) : super(key: key);
@@ -22,16 +23,16 @@ class PoolItemTopBar extends StatelessWidget {
             CachedNetworkImage(
               imageUrl: pool.creator.profilePicURL ?? 'null',
               imageBuilder: (context, imageProvider) => Container(
-                width: 32.0,
-                height: 32.0,
+                width: TOP_BAR_AVATAR_SIZE,
+                height: TOP_BAR_AVATAR_SIZE,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   image: DecorationImage(
                       image: imageProvider, fit: BoxFit.cover),
                 ),
               ),
-              placeholder: (context, url) => CircularProgressIndicator(),
-              errorWidget: (context, url, error) => Icon(Icons.error),
+              placeholder: (context, url) => SizedBox(height: TOP_BAR_AVATAR_SIZE, width: TOP_BAR_AVATAR_SIZE,),
+              errorWidget: (context, url, error) => Icon(Icons.error, size: TOP_BAR_AVATAR_SIZE,),
             ),
             SizedBox(width: 8.0,),
             Text(pool.creator.name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),),

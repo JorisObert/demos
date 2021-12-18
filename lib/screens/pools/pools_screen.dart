@@ -1,6 +1,7 @@
-import 'package:demos/components/pool_item.dart';
 import 'package:demos/models/pool.dart';
 import 'package:demos/providers/pool_provider.dart';
+import 'package:demos/screens/pools/components/filter_bar.dart';
+import 'package:demos/widgets/pool_item_widget/pool_item.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -26,11 +27,13 @@ class _PoolsScreenState extends State<PoolsScreen> {
     return Scaffold(
       body: Column(
         children: [
+          FilterBar(),
           Expanded(
             child: PageView.builder(
               scrollDirection: Axis.vertical,
               itemCount: votes.length,
               controller: _pageController,
+              pageSnapping: true,
               onPageChanged: (index) {
                 if (index >= votes.length - 1) {
                   context.read<PoolProvider>().getPools();
@@ -38,7 +41,7 @@ class _PoolsScreenState extends State<PoolsScreen> {
               },
               itemBuilder: (BuildContext context, int index) {
                 return Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),
                   child: PoolItem(
                     pool: votes[index],
                   ),

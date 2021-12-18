@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:demos/utils/util_general.dart';
 import 'package:json_annotation/json_annotation.dart';
 

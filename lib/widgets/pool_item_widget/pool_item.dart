@@ -1,12 +1,11 @@
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:demos/components/pool_bar.dart';
-import 'package:demos/components/pool_bottom.dart';
-import 'package:demos/components/pool_item_top_bar.dart';
 import 'package:demos/models/pool.dart';
-import 'package:demos/utils/util_general.dart';
+import 'package:demos/widgets/pool_item_widget/components/pool_bar.dart';
+
+import 'package:demos/widgets/pool_item_widget/components/pool_item_top_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:timeago/timeago.dart' as timeago;
+
+import 'components/pool_bottom.dart';
 
 class PoolItem extends StatelessWidget {
   final Pool pool;

@@ -1,4 +1,4 @@
-import 'package:demos/components/pool_bar.dart';
+import 'package:demos/widgets/pool_item_widget/components/pool_bar.dart';
 import 'package:flutter/material.dart';
 
 class PoolBottom extends StatelessWidget {

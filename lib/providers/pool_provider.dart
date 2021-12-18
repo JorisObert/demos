@@ -1,9 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:collection/src/iterable_extensions.dart';
-import 'package:demos/components/pool_bar.dart';
 import 'package:demos/models/pool.dart';
 import 'package:demos/models/user_vote.dart';
 import 'package:demos/services/api_calls.dart';
+import 'package:demos/widgets/pool_item_widget/components/pool_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -17,19 +15,17 @@ class PoolProvider extends ChangeNotifier {
   static List<UserVote> _userVotes = [];
   List<UserVote> get userVotes => _userVotes;
 
-  Future<void> getPools() async {
+  void resetPoolList(){
+    _pools.clear();
+  }
 
-      var newPools = await ApiCalls.getPoolsByNewest(_userVotes);
+  Future<void> getPools({String? lang, bool onlyMine = false}) async {
+      var newPools = await ApiCalls.getPools(lang: lang, onlyMine: onlyMine);
       if (newPools != null) {
         _pools = List.from(_pools);
         for (Pool pool in newPools) {
-          if (_userVotes
-                  .firstWhereOrNull((element) => element.voteId == pool.id) ==
-              null) {
-            _pools.add(pool);
-          }
+          _pools.add(pool);
         }
-
     }
     notifyListeners();
   }
