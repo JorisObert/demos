@@ -19,7 +19,7 @@ class _LazyPollItemState extends State<LazyPollItem> {
 
   @override
   void initState() {
-    _future = context.read<PoolProvider>().getPoolById(widget.voteId);
+    //_future = context.read<PoolProvider>().getPoolById(widget.voteId);
     super.initState();
   }
 

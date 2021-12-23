@@ -1,9 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:demos/models/pool.dart';
+import 'package:demos/utils/constants.dart';
 import 'package:demos/utils/util_general.dart';
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:demos/utils/constants.dart';
 
 class PoolItemTopBar extends StatelessWidget {
   const PoolItemTopBar({Key? key, required this.pool}) : super(key: key);
@@ -21,7 +21,7 @@ class PoolItemTopBar extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             CachedNetworkImage(
-              imageUrl: pool.creator.profilePicURL ?? 'null',
+              imageUrl: 'null',
               imageBuilder: (context, imageProvider) => Container(
                 width: TOP_BAR_AVATAR_SIZE,
                 height: TOP_BAR_AVATAR_SIZE,
@@ -35,7 +35,7 @@ class PoolItemTopBar extends StatelessWidget {
               errorWidget: (context, url, error) => Icon(Icons.error, size: TOP_BAR_AVATAR_SIZE,),
             ),
             SizedBox(width: 8.0,),
-            Text(pool.creator.name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),),
+            Text(pool.user!.properties['name'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),),
           ],
         ),
         pool.endDate != null && pool.endDate!.isAfter(DateTime.now()) ? Row(
@@ -49,7 +49,7 @@ class PoolItemTopBar extends StatelessWidget {
             ),
             Text(formatDuration(difference!)),
           ],
-        ):Text(timeago.format(pool.endDate!)),
+        ):SizedBox.shrink(),
       ],
     );
   }

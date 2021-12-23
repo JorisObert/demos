@@ -1,4 +1,5 @@
 import 'package:demos/models/pool.dart';
+import 'package:demos/providers/demos_user_provider.dart';
 import 'package:demos/providers/pool_provider.dart';
 import 'package:demos/widgets/pool_item_widget/pool_item.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +16,7 @@ class _MyPoolsScreenState extends State<MyPoolsScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<PoolProvider>().getUserPools();
+    context.read<PoolProvider>().getUserPools(userId: context.read<DemosUserProvider>().user!.getUserId());
   }
 
   @override
@@ -32,7 +33,7 @@ class _MyPoolsScreenState extends State<MyPoolsScreen> {
               onPageChanged: (index) {
                 print('page has changed $index');
                 if (index >= userPools.length - 1) {
-                  context.read<PoolProvider>().getUserPools();
+                  context.read<PoolProvider>().getUserPools(userId: context.read<DemosUserProvider>().user!.getUserId());
                 }
               },
               itemBuilder: (BuildContext context, int index) {

@@ -1,4 +1,4 @@
-import 'package:demos/widgets/pool_item_widget/components/pool_bar.dart';
+import 'package:demos/models/choice.dart';
 import 'package:flutter/material.dart';
 
 class PoolBottom extends StatelessWidget {
@@ -37,7 +37,9 @@ class PoolBottom extends StatelessWidget {
 
   int _nbrVotes() {
     return choices.fold(0, (i, el) {
-      return i + (el.nbrVotes);
+      //TODO JORIS
+      return 0;
+      //i + (el.nbrVotes);
     });
   }
 }

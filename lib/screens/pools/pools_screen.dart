@@ -1,4 +1,5 @@
 import 'package:demos/models/pool.dart';
+import 'package:demos/providers/demos_user_provider.dart';
 import 'package:demos/providers/pool_provider.dart';
 import 'package:demos/screens/pools/components/filter_bar.dart';
 import 'package:demos/widgets/pool_item_widget/pool_item.dart';
@@ -17,7 +18,7 @@ class _PoolsScreenState extends State<PoolsScreen> {
   void initState() {
     super.initState();
     Future.delayed(Duration(seconds: 1),(){
-      context.read<PoolProvider>().getPools();
+      context.read<PoolProvider>().getUserPools( userId: context.read<DemosUserProvider>().user!.getUserId());
     });
   }
 

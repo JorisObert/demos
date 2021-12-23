@@ -1,6 +1,5 @@
-import 'package:demos/providers/pool_provider.dart';
+import 'package:demos/providers/demos_user_provider.dart';
 import 'package:demos/screens/main/main_screen.dart';
-import 'package:demos/screens/pools/pools_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/src/provider.dart';
 
@@ -35,8 +34,7 @@ class _SplashScreenState extends State<SplashScreen> {
         MaterialPageRoute(builder: (context) => MainScreen()),
       );
     });
-
-    context.read<PoolProvider>().getUserVotes();
+    context.read<DemosUserProvider>().loginUser();
   }
 
   @override

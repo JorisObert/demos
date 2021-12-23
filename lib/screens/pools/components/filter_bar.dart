@@ -27,7 +27,7 @@ class _FilterBarState extends State<FilterBar> {
         _wantsOnlyMine = value!;
       });
       context.read<PoolProvider>().resetPoolList();
-      context.read<PoolProvider>().getPools(onlyMine: value!);
+      context.read<PoolProvider>().getPools(lang: 'FR');
     });
   }
 }

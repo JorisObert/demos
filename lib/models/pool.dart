@@ -1,50 +1,27 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:demos/models/demos_user.dart';
-import 'package:demos/utils/util_general.dart';
-import 'package:json_annotation/json_annotation.dart';
+import 'package:backendless_sdk/backendless_sdk.dart';
 
-part 'pool.g.dart';
-
-@JsonSerializable()
+@reflector
 class Pool {
-  String? id;
-  final String? identifier;
-  final String title;
-  final Map<String, int> choices;
+  String? objectId;
+  String? title;
+  BackendlessUser? user;
+  List<dynamic>? choices;
 
-  @JsonKey(fromJson: decodeDemosUserFromJson, toJson: encodeDemosUserToJson)
-  final DemosUser creator;
+  //final List<String>? hashtags;
 
-  @JsonKey(defaultValue: [])
-  final List<String>? hashtags;
+  String? countryCode;
 
-  final String? countryCode;
+  bool isPrivate = false;
 
-  @JsonKey(defaultValue: false)
-  final bool isPrivate;
+  int alert = 0;
 
-  @JsonKey(defaultValue: 0)
-  final int alert;
+  bool hidden = false;
 
-  @JsonKey(defaultValue: false)
-  final bool hidden;
+  DateTime? endDate;
 
-  @JsonKey(fromJson: dateTimeFromTimestamp, toJson: dateTimeToTimestamp)
-  final DateTime? endDate;
 
-  Pool(
-      {this.identifier,
-      required this.title,
-      required this.choices,
-      this.hashtags,
-      this.countryCode,
-      this.isPrivate = false,
-      this.alert = 0,
-      this.hidden = false,
-      this.endDate,
-      required this.creator,
-      this.id});
-
-  factory Pool.fromJson(Map<String, dynamic> json) => _$PoolFromJson(json);
-  Map<String, dynamic> toJson() => _$PoolToJson(this);
+  @override
+  String toString() {
+    return '{${this.title}, ${this.countryCode}, ${this.isPrivate}, ${this.alert}, ${this.hidden}, ${this.endDate}, ${this.choices}';
+  }
 }

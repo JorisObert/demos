@@ -1,7 +1,3 @@
-import 'dart:convert';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:demos/models/demos_user.dart';
 import 'package:flutter/material.dart';
 
 Color getColor(int index) {
@@ -28,10 +24,6 @@ String formatDuration(Duration duration) {
   return '${duration.inSeconds}s';
 }
 
-DateTime dateTimeFromTimestamp(Timestamp timestamp) {
-  return DateTime.parse(timestamp.toDate().toString());
-}
-
 DateTime dateTimeFromTimestring(String timestring) {
   return DateTime.parse(timestring);
 }
@@ -40,11 +32,7 @@ String? dateTimeToTimestamp(DateTime? dateTime){
   return dateTime != null ? dateTime.toString() : null;
 }
 
-DemosUser decodeDemosUserFromJson(String jsonString){
+/*DemosUser decodeDemosUserFromJson(String jsonString){
   print(jsonString);
   return DemosUser.fromJson(jsonDecode(jsonString));
-}
-
-String encodeDemosUserToJson(DemosUser demosUser){
-  return jsonEncode(demosUser);
-}
+}*/
