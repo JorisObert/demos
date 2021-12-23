@@ -1,3 +1,4 @@
+import 'package:demos/providers/demos_user_provider.dart';
 import 'package:demos/providers/pool_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/src/provider.dart';
@@ -27,7 +28,7 @@ class _FilterBarState extends State<FilterBar> {
         _wantsOnlyMine = value!;
       });
       context.read<PoolProvider>().resetPoolList();
-      context.read<PoolProvider>().getPools(lang: 'FR');
+      context.read<PoolProvider>().getPools(lang: 'FR', userId: context.read<DemosUserProvider>().user!.getUserId());
     });
   }
 }

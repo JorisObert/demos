@@ -37,9 +37,7 @@ class PoolBottom extends StatelessWidget {
 
   int _nbrVotes() {
     return choices.fold(0, (i, el) {
-      //TODO JORIS
-      return 0;
-      //i + (el.nbrVotes);
+      return i + (el.nbrVotes);
     });
   }
 }

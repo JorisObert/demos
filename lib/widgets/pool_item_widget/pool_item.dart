@@ -30,6 +30,7 @@ class PoolItem extends StatelessWidget {
                   flex: choicesList.length,
                   child: PoolBarList(
                     choices: choicesList,
+                    poolId: pool.objectId!,
                   ),
                 ),
               ],

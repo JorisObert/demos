@@ -6,25 +6,25 @@ import 'package:demos/widgets/pool_item_widget/pool_item.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class PoolsScreen extends StatefulWidget {
+class VotedPoolsScreen extends StatefulWidget {
   @override
-  _PoolsScreenState createState() => _PoolsScreenState();
+  _VotedPoolsScreenState createState() => _VotedPoolsScreenState();
 }
 
-class _PoolsScreenState extends State<PoolsScreen> {
+class _VotedPoolsScreenState extends State<VotedPoolsScreen> {
   final PageController _pageController = PageController();
 
   @override
   void initState() {
     super.initState();
     Future.delayed(Duration(seconds: 1),(){
-      context.read<PoolProvider>().getPools(userId: context.read<DemosUserProvider>().user!.getUserId());
+      context.read<PoolProvider>().getUserVotedPools(userId: context.read<DemosUserProvider>().user!.getUserId());
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    List<Pool> votes = context.watch<PoolProvider>().pools;
+    List<Pool> votes = context.watch<PoolProvider>().userVotedPools;
     return Scaffold(
       body: Column(
         children: [

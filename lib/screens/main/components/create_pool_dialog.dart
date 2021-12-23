@@ -183,11 +183,10 @@ class _CreatePoolDialogState extends State<CreatePoolDialog> {
                       Pool pool = Pool()
                         ..title = _formKey.currentState?.value['title']
                         ..countryCode = _userCountryCode
-                        ..hidden = false;
+                        ..ownerId = context.read<DemosUserProvider>().user?.getUserId();
 
                       var choices = _createMapFromChoices;
-                      context.read<PoolProvider>().createPool(pool, choices,
-                          context.read<DemosUserProvider>().user);
+                      context.read<PoolProvider>().createPool(pool, choices);
                     } else {
                       print('Invalid');
                     }

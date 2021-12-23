@@ -1,6 +1,7 @@
 import 'package:demos/screens/main/components/create_pool_dialog.dart';
 import 'package:demos/screens/my_pools/my_pools_screen.dart';
 import 'package:demos/screens/pools/pools_screen.dart';
+import 'package:demos/screens/voted_pools/voted_pools_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
@@ -85,7 +86,7 @@ class _MainScreenState extends State<MainScreen>
             children: [
               PoolsScreen(),
               MyPoolsScreen(),
-              Container(),
+              VotedPoolsScreen(),
               Container(),
             ],
             controller: _myTabController,

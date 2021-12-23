@@ -1,4 +1,5 @@
 import 'package:demos/models/choice.dart';
+import 'package:demos/providers/demos_user_provider.dart';
 import 'package:demos/providers/pool_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
@@ -6,8 +7,9 @@ import 'package:provider/provider.dart';
 
 class PoolBarList extends StatelessWidget {
   final List<Choice> choices;
+  final String poolId;
 
-  PoolBarList({Key? key, required this.choices})
+  PoolBarList({Key? key, required this.choices, required this.poolId})
       : super(key: key);
 
   ScrollController controller = ScrollController();
@@ -48,8 +50,7 @@ class PoolBarList extends StatelessWidget {
 
   List<Widget> _createChildren(BuildContext context) {
     return List.generate(choices.length, (index) {
-      //TODO JORIS
-      int nbrVoters = 0;
+      int nbrVoters = choices[index].nbrVotes;
       double percent = _getFlex(nbrVoters);
 
       return Padding(
@@ -90,7 +91,7 @@ class PoolBarList extends StatelessWidget {
               child: InkWell(
                 onTap: () => context
                         .read<PoolProvider>()
-                        .saveVote(choices[index]),
+                        .saveVote(choices[index], context.read<DemosUserProvider>().user?.getUserId(), poolId),
                 child: Container(
                   width: 32,
                   height: 32,
@@ -115,9 +116,7 @@ class PoolBarList extends StatelessWidget {
 
   double _getFlex(int? value) {
     if (value == null) return 0.0;
-    //TODO JORIS
-    int total = 0;
-    //choices.fold(0, (sum, item) => sum + (item.nbrVotes));
+    int total = choices.fold(0, (sum, item) => sum + (item.nbrVotes));
     return total > 0 ? value / total : 0;
   }
 }

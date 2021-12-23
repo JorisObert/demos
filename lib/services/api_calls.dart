@@ -15,23 +15,19 @@ class ApiCalls {
 
   // Database methods
 
-  static Future<bool> createPool(Pool pool, List<Choice> choices, BackendlessUser user) async {
+  static Future<bool> createPool(Pool pool, List<Choice> choices) async {
 
     var poolResponse;
 
     //creating the pool
     try {
       poolResponse = await Backendless.data.withClass<Pool>().save(pool);
-      Backendless.data.withClass<Pool>().setRelation(poolResponse!.objectId!, USER_FIELD,
-          childrenObjectIds: [user.getUserId()]);
+      Backendless.data.withClass<Pool>().setRelation(poolResponse!.objectId!, USER_ID_FIELD,
+          childrenObjectIds: [poolResponse.ownerId!]);
       debugPrint('pool created');
     } catch (e) {
       debugPrint('couldnt create pool: $e');
       return false;
-    }
-
-    for(Choice choice in choices){
-      choice.poolId = poolResponse!.objectId!;
     }
 
     //create and set relations on choices
@@ -47,15 +43,19 @@ class ApiCalls {
     }
   }
 
-  static Future<List<Pool?>?> getPools(
-      {String? lang,}) async {
+  static Future<List<Pool?>?> getUnseenPools(
+      {String? lang, required String userId}) async {
     try{
+
+      final unitOfWork = UnitOfWork();
+
       DataQueryBuilder queryBuilder = DataQueryBuilder();
-      queryBuilder.related = ['user', 'choices'];
+      queryBuilder.related = ['user', 'choices', 'votes'];
+      queryBuilder.whereClause = "votes.ownerId != '$userId' and ownerId != '$userId'";
+      queryBuilder.properties = ['votes', 'Count(votes) as refs'];
       if(lang != null){
         queryBuilder.whereClause = "countryCode = '$lang'";
       }
-
       return Backendless.data.withClass<Pool>().find(queryBuilder);
     }catch(e){
       return null;
@@ -67,7 +67,22 @@ class ApiCalls {
     try{
       print('getting pools $userId');
       DataQueryBuilder queryBuilder = DataQueryBuilder()
-      ..whereClause = "votes.ownerId = '$userId'";
+      ..related = ['user', 'choices']
+      ..whereClause = "ownerId = '$userId'";
+      return Backendless.data.withClass<Pool>().find(queryBuilder);
+    }catch(e){
+      print(e);
+      return null;
+    }
+  }
+
+  static Future<List<Pool?>?> getUserVotedPools(
+      {bool finished = false, required userId}) async {
+    try{
+      print('getting pools $userId');
+      DataQueryBuilder queryBuilder = DataQueryBuilder()
+        ..related = ['user', 'choices', 'votes']
+        ..whereClause = "votes.ownerId = '$userId'";
       if(finished){
         queryBuilder.whereClause = "endDate < '${DateTime.now()}'";
       }
@@ -78,13 +93,20 @@ class ApiCalls {
     }
   }
 
-  static Future<Map<Vote?, int?>?> saveUserVote(Choice choice) async {
+  static Future<Map<Vote?, int?>?> saveUserVote(Choice choice, String ownerId, String poolId) async {
     print(choice.objectId);
-    Vote vote = Vote()..choiceId = choice.objectId;
+    Vote vote = Vote()
+      ..ownerId = ownerId;
+
+    //vote to db
     Vote? voteToDB = await Backendless.data.withClass<Vote>().save(vote);
     if(voteToDB != null){
-      Backendless.data.withClass<Choice>().setRelation(choice.poolId!, VOTES_FIELD,
-      childrenObjectIds: [voteToDB.objectId!]);
+
+      //relation between vote to choiceId
+      await Backendless.data.withClass<Vote>().setRelation(voteToDB.objectId!, CHOICE_ID_FIELD,
+      childrenObjectIds: [choice.objectId!]);
+      await Backendless.data.withClass<Pool>().setRelation(poolId, VOTES_FIELD,
+          childrenObjectIds: [voteToDB.objectId!]);
       int? count = await Backendless.counters.of(choice.objectId!).incrementAndGet();
       return {voteToDB: count};
     }
@@ -95,7 +117,8 @@ class ApiCalls {
     return await Backendless.counters.of(choice.objectId!).getValue() ?? 0;
   }
 
-  static const USER_FIELD = 'user';
+  static const USER_ID_FIELD = 'user';
+  static const CHOICE_ID_FIELD = 'choice';
   static const CHOICES_FIELD = 'choices';
   static const VOTES_FIELD = 'votes';
 

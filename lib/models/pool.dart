@@ -4,8 +4,10 @@ import 'package:backendless_sdk/backendless_sdk.dart';
 class Pool {
   String? objectId;
   String? title;
+  String? ownerId;
   BackendlessUser? user;
   List<dynamic>? choices;
+  List<dynamic>? votes;
 
   //final List<String>? hashtags;
 

@@ -12,21 +12,22 @@ class PoolProvider extends ChangeNotifier {
   static List<Pool> _userPools = [];
   List<Pool> get userPools => _userPools;
 
-  static List<Vote> _userVotes = [];
-  List<Vote> get userVotes => _userVotes;
+  static List<Pool> _userVotedPools = [];
+  List<Pool> get userVotedPools => _userVotedPools;
 
   void resetPoolList(){
     _pools.clear();
   }
 
-  Future<void> getPools({String? lang,}) async {
+  Future<void> getPools({String? lang, required String userId}) async {
     print('getting pools');
-      var newPools = await ApiCalls.getPools(lang: lang,);
+      var newPools = await ApiCalls.getUnseenPools(lang: lang, userId: userId);
       print('results is $newPools');
       if (newPools != null) {
         _pools = List.from(_pools);
         for (Pool? pool in newPools) {
-          _pools.add(pool!);
+          await _getChoicesNbrVotes(pool!.choices!);
+          _pools.add(pool);
         }
     }
     notifyListeners();
@@ -37,29 +38,51 @@ class PoolProvider extends ChangeNotifier {
     var newPools = await ApiCalls.getUserPools(finished: finished, userId: userId);
     print('results is $newPools');
     if (newPools != null) {
-      _pools = List.from(_pools);
+      _userPools = List.from(_userPools);
       for (Pool? pool in newPools) {
-        _pools.add(pool!);
+        await _getChoicesNbrVotes(pool!.choices!);
+        _userPools.add(pool);
       }
     }
     notifyListeners();
   }
 
-  Future<bool> createPool(Pool pool, List<Choice> choices, BackendlessUser? user) async {
-    if(user == null) return false;
-    bool success = await ApiCalls.createPool(pool, choices, user.getUserId());
+  Future<void> getUserVotedPools({bool finished = false, required String userId}) async {
+
+    var newPools = await ApiCalls.getUserVotedPools(finished: finished, userId: userId);
+    print('results is $newPools');
+    if (newPools != null) {
+      _userVotedPools = List.from(_userVotedPools);
+      for (Pool? pool in newPools) {
+        await _getChoicesNbrVotes(pool!.choices!);
+        _userVotedPools.add(pool);
+      }
+    }
+    notifyListeners();
+  }
+
+  _getChoicesNbrVotes(List<dynamic> choices) async{
+    for(Choice choice in choices){
+      print('nbr votes for ${choice.objectId} is ${await ApiCalls.getChoiceCount(choice)}');
+      choice.nbrVotes = await ApiCalls.getChoiceCount(choice);
+    }
+  }
+
+  Future<bool> createPool(Pool pool, List<Choice> choices) async {
+    if(pool.ownerId == null) return false;
+    bool success = await ApiCalls.createPool(pool, choices);
     if(success){
-      pool.choices = choices;
-      pool.user = user;
+      /*pool.choices = choices;
       _pools = List.from(_pools);
       _pools.add(pool);
-      notifyListeners();
+      notifyListeners();*/
     }
     return success;
   }
 
-  Future<Vote?> saveVote(Choice choice) async {
-    Map<Vote?, int?>? result = await ApiCalls.saveUserVote(choice);
+  Future<Vote?> saveVote(Choice choice, String? ownerId, String? poolId) async {
+    if(ownerId == null || poolId == null) return null;
+    Map<Vote?, int?>? result = await ApiCalls.saveUserVote(choice, ownerId, poolId);
     return result?.keys.first;
   }
 
