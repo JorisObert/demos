@@ -1,12 +1,27 @@
-import 'package:backendless_sdk/backendless_sdk.dart';
+import 'package:json_annotation/json_annotation.dart';
 
-import 'pool.dart';
+part 'choice.g.dart';
 
-@reflector
+@JsonSerializable(explicitToJson: true)
 class Choice {
-  String? objectId;
-  String? ownerId;
-  late String title;
-  Pool? pool;
-  late int nbrVotes = 0;
+  @JsonKey(toJson: null, includeIfNull: false)
+  final String? id;
+
+  String? poolId;
+
+  final String title;
+
+  int nbrVotes;
+
+  @JsonKey(toJson: null, includeIfNull: false)
+  final DateTime? createdAt;
+
+  @JsonKey(toJson: null, includeIfNull: false)
+  final DateTime? updatedAt;
+
+  Choice({this.id, this.poolId, required this.title, this.nbrVotes = 0,this.createdAt,
+    this.updatedAt,});
+
+  factory Choice.fromJson( Map<String, dynamic> json) => _$ChoiceFromJson(json);
+  Map<String, dynamic> toJson() => _$ChoiceToJson(this);
 }

@@ -1,0 +1,64 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'pool.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+Pool _$PoolFromJson(Map<String, dynamic> json) => Pool(
+      title: json['title'] as String,
+      id: json['id'] as String?,
+      userId: json['userId'] as String,
+      user: json['user'] == null
+          ? null
+          : DemosUser.fromJson(json['user'] as Map<String, dynamic>),
+      choices: (json['choices'] as List<dynamic>?)
+          ?.map((e) => Choice.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      votes: (json['votes'] as List<dynamic>?)
+          ?.map((e) => Vote.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      countryCode: json['countryCode'] as String? ?? 'EN',
+      endDate: Pool._fromJson(json['endDate'] as int?),
+      isPrivate: json['isPrivate'] as bool? ?? false,
+      alert: json['alert'] as int? ?? 0,
+      createdAt: json['createdAt'] == null
+          ? null
+          : DateTime.parse(json['createdAt'] as String),
+      updatedAt: json['updatedAt'] == null
+          ? null
+          : DateTime.parse(json['updatedAt'] as String),
+      hashtags: Pool._decodeHashtags(json['hashtags']),
+      isHidden: json['isHidden'] as bool? ?? false,
+      moderated: json['moderated'] as bool? ?? false,
+      totalVotes: json['totalVotes'] as int? ?? 0,
+    );
+
+Map<String, dynamic> _$PoolToJson(Pool instance) {
+  final val = <String, dynamic>{};
+
+  void writeNotNull(String key, dynamic value) {
+    if (value != null) {
+      val[key] = value;
+    }
+  }
+
+  writeNotNull('id', instance.id);
+  val['title'] = instance.title;
+  writeNotNull('choices', instance.choices?.map((e) => e.toJson()).toList());
+  writeNotNull('votes', instance.votes?.map((e) => e.toJson()).toList());
+  writeNotNull('user', instance.user?.toJson());
+  writeNotNull('hashtags', instance.hashtags?.map((e) => e.toJson()).toList());
+  val['countryCode'] = instance.countryCode;
+  val['isPrivate'] = instance.isPrivate;
+  val['alert'] = instance.alert;
+  val['isHidden'] = instance.isHidden;
+  val['endDate'] = Pool._toJson(instance.endDate);
+  writeNotNull('createdAt', instance.createdAt?.toIso8601String());
+  writeNotNull('updatedAt', instance.updatedAt?.toIso8601String());
+  val['totalVotes'] = instance.totalVotes;
+  val['userId'] = instance.userId;
+  val['moderated'] = instance.moderated;
+  return val;
+}

@@ -27,7 +27,8 @@ class PoolCaption extends StatelessWidget {
           radius: 4,
           backgroundColor: getColor(index),
         ),
-        Text(choice.title),
+        //TODO JORIS
+        Text('choice.title'),
       ],
     );
   }

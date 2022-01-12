@@ -5,6 +5,7 @@ import 'package:country_pickers/country.dart';
 import 'package:country_pickers/country_picker_dropdown.dart';
 import 'package:country_pickers/country_pickers.dart';
 import 'package:demos/models/choice.dart';
+import 'package:demos/models/hashtag.dart';
 import 'package:demos/models/pool.dart';
 import 'package:demos/providers/demos_user_provider.dart';
 import 'package:demos/providers/pool_provider.dart';
@@ -14,16 +15,15 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/src/provider.dart';
 
-class CreatePoolDialog extends StatefulWidget {
-  CreatePoolDialog({Key? key, required this.onClosed}) : super(key: key);
+class CreatePoolScreen extends StatefulWidget {
+  CreatePoolScreen({Key? key}) : super(key: key);
 
-  final VoidCallback onClosed;
 
   @override
-  State<CreatePoolDialog> createState() => _CreatePoolDialogState();
+  State<CreatePoolScreen> createState() => _CreatePoolScreenState();
 }
 
-class _CreatePoolDialogState extends State<CreatePoolDialog> {
+class _CreatePoolScreenState extends State<CreatePoolScreen> {
   final _formKey = GlobalKey<FormBuilderState>();
 
   int _nbrChoices = 2;
@@ -36,6 +36,8 @@ class _CreatePoolDialogState extends State<CreatePoolDialog> {
   late String _userCountryCode;
 
   bool _isPrivate = false;
+
+  bool _isAnonymous = true;
 
   late TextEditingController _hashtagsInputController;
 
@@ -54,146 +56,157 @@ class _CreatePoolDialogState extends State<CreatePoolDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return LimitedBox(
-      maxHeight: MediaQuery.of(context).size.height - 200,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: FormBuilder(
-          key: _formKey,
-          child: ListView(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        AppIcon(),
-                        SizedBox(
-                          width: 8.0,
-                        ),
-                        Text(
-                          'Create your pool',
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                    //IconButton(onPressed: widget.onClosed, icon: Icon(Icons.close)),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Text(
-                  'Title',
-                  style: _sectionTitleStyle,
-                ),
-              ),
-              FormBuilderTextField(
-                name: 'title',
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                decoration: InputDecoration(
-                    border: new OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 8.0, vertical: 4.0)),
-                onChanged: (_) => print('cool'),
-                // valueTransformer: (text) => num.tryParse(text),
-                /*validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.
-                ]),*/
-                maxLines: 5,
-                minLines: 1,
-                maxLength: 170,
-                keyboardType: TextInputType.text,
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Text(
-                  'Choices',
-                  style: _sectionTitleStyle,
-                ),
-              ),
-              ListView.builder(
-                itemCount: _nbrChoices,
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemBuilder: (BuildContext context, int index) {
-                  return Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: FormBuilder(
+        key: _formKey,
+        child: ListView(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
                     children: [
-                      Expanded(
-                        child: FormBuilderTextField(
-                          name: 'choice$index',
-                          autovalidateMode: AutovalidateMode.onUserInteraction,
-                          decoration: InputDecoration(
-                              border: new OutlineInputBorder(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(8.0)),
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 8.0, vertical: 4.0)),
-                          // valueTransformer: (text) => num.tryParse(text),
-                          /* validator: FormBuilderValidators.compose([
-
-                ]),*/
-                          maxLines: 1,
-                          maxLength: 40,
-                          keyboardType: TextInputType.text,
-                        ),
+                      AppIcon(),
+                      SizedBox(
+                        width: 8.0,
                       ),
-                      index < (_nbrChoices - 1)
-                          ? IconButton(
-                              icon: Icon(Icons.add_circle),
-                              onPressed: () {},
-                              color: Colors.transparent,
-                            )
-                          : _addChoiceButton()
+                      Text(
+                        'Create your pool',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
                     ],
-                  );
-                },
+                  ),
+                  //IconButton(onPressed: widget.onClosed, icon: Icon(Icons.close)),
+                ],
               ),
-              SizedBox(
-                height: 16.0,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Text(
+                'Title',
+                style: _sectionTitleStyle,
               ),
-              _privacySwitch(),
-              SizedBox(
-                height: 16.0,
-              ),
-              _hashtags(),
-              SizedBox(
-                height: 16.0,
-              ),
-              _endDate(),
-              SizedBox(
-                height: 16.0,
-              ),
-              _countryChoser(),
-              SizedBox(
-                height: 16.0,
-              ),
-              ElevatedButton(
-                  onPressed: () {
-                    print(_formKey.currentState);
-                    _formKey.currentState?.save();
-                    if (_formKey.currentState?.saveAndValidate() ?? false) {
-                      Pool pool = Pool()
-                        ..title = _formKey.currentState?.value['title']
-                        ..countryCode = _userCountryCode
-                        ..ownerId = context.read<DemosUserProvider>().user?.getUserId();
+            ),
+            FormBuilderTextField(
+              name: 'title',
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              decoration: InputDecoration(
+                  border: new OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 8.0, vertical: 4.0)),
+              onChanged: (_) {
 
-                      var choices = _createMapFromChoices;
-                      context.read<PoolProvider>().createPool(pool, choices);
-                    } else {
-                      print('Invalid');
-                    }
-                  },
-                  child: Text('Create'))
-            ],
-          ),
+              },
+              // valueTransformer: (text) => num.tryParse(text),
+              /*validator: FormBuilderValidators.compose([
+                FormBuilderValidators.
+              ]),*/
+              maxLines: 5,
+              minLines: 1,
+              maxLength: 170,
+              keyboardType: TextInputType.text,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Text(
+                'Choices',
+                style: _sectionTitleStyle,
+              ),
+            ),
+            ListView.builder(
+              itemCount: _nbrChoices,
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemBuilder: (BuildContext context, int index) {
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: FormBuilderTextField(
+                        name: 'choice$index',
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        decoration: InputDecoration(
+                            border: new OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(8.0)),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 8.0, vertical: 4.0)),
+                        // valueTransformer: (text) => num.tryParse(text),
+                        /* validator: FormBuilderValidators.compose([
+
+              ]),*/
+                        maxLines: 1,
+                        maxLength: 40,
+                        keyboardType: TextInputType.text,
+                      ),
+                    ),
+                    index < (_nbrChoices - 1)
+                        ? IconButton(
+                            icon: Icon(Icons.add_circle),
+                            onPressed: () {},
+                            color: Colors.transparent,
+                          )
+                        : _addChoiceButton()
+                  ],
+                );
+              },
+            ),
+            SizedBox(
+              height: 16.0,
+            ),
+            _privacySwitch(),
+            _isPrivate ? Column(
+              children: [
+                SizedBox(
+                  height: 16.0,
+                ),
+                _anonymousSwitch()
+              ],
+            ):SizedBox.shrink(),
+            SizedBox(
+              height: 16.0,
+            ),
+            _hashtags(),
+            SizedBox(
+              height: 16.0,
+            ),
+            _endDate(),
+            SizedBox(
+              height: 16.0,
+            ),
+            _countryChoser(),
+            SizedBox(
+              height: 16.0,
+            ),
+            ElevatedButton(
+                onPressed: () {
+                  print(_formKey.currentState);
+                  _formKey.currentState?.save();
+                  if (_formKey.currentState?.saveAndValidate() ?? false) {
+                    Pool pool = Pool(
+                      title: _formKey.currentState?.value['title'],
+                      userId: context.read<DemosUserProvider>().firebaseUser!.uid,
+                      countryCode: _userCountryCode,
+                      isPrivate: false,
+                      user: context.read<DemosUserProvider>().user,
+                    );
+
+                    var choices = _createMapFromChoices;
+                    var hashtags = _createListFromHashtags;
+                    context.read<PoolProvider>().createPool(pool: pool, choices: choices, hashtags: hashtags);
+                  } else {
+                    print('Invalid');
+                  }
+                },
+                child: Text('Create'))
+          ],
         ),
       ),
     );
@@ -202,9 +215,18 @@ class _CreatePoolDialogState extends State<CreatePoolDialog> {
   List<Choice> get _createMapFromChoices {
     List<Choice> choices = [];
     for (int i = 0; i < _nbrChoices; i++) {
-      choices.add(Choice()..title = _formKey.currentState?.value['choice$i']);
+      choices.add(Choice(title: _formKey.currentState?.value['choice$i']));
     }
     return choices;
+  }
+
+  List<Hashtag> get _createListFromHashtags {
+    List<Hashtag> hashtags = [];
+    List<String> hashString = _formKey.currentState?.value['hashtags']?.toString().split(' ') ?? [];
+    for (int i = 0; i < hashString.length; i++) {
+      hashtags.add(Hashtag(title: hashString[i]));
+    }
+    return hashtags;
   }
 
   Widget _addChoiceButton() {
@@ -230,6 +252,8 @@ class _CreatePoolDialogState extends State<CreatePoolDialog> {
             ),
             Switch(
                 value: _isPrivate,
+                activeColor: Theme.of(context).colorScheme.secondaryVariant,
+
                 onChanged: (value) {
                   setState(() {
                     _isPrivate = value;
@@ -242,8 +266,36 @@ class _CreatePoolDialogState extends State<CreatePoolDialog> {
           ],
         ),
         Text(_isPrivate
-            ? 'You\'ll be able to share your pool with a link'
+            ? 'Only people with a link will be able to vote'
             : 'Everyone can see your pool'),
+      ],
+    );
+  }
+
+  Widget _anonymousSwitch() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+
+            Switch(
+                value: _isAnonymous,
+                activeColor: Theme.of(context).colorScheme.secondaryVariant,
+                onChanged: (value) {
+                  setState(() {
+                    _isAnonymous = value;
+                  });
+                }),
+            Text(
+              'anonymous',
+              style: _sectionTitleStyle,
+            ),
+          ],
+        ),
+        Text(_isAnonymous
+            ? 'Votes are anonymous'
+            : 'Names of votants will be known'),
       ],
     );
   }
@@ -324,21 +376,7 @@ class _CreatePoolDialogState extends State<CreatePoolDialog> {
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0)),
           onChanged: (text) {
-            if (text != null && text.length > 0) {
-              var splitted = text.split(' ');
 
-              String? lastWord =
-                  splitted.lastWhereOrNull((element) => element.isNotEmpty);
-              if (lastWord != null &&
-                  text.endsWith(' ') &&
-                  !lastWord.startsWith('#')) {
-                print(
-                    text.substring(0, text.indexOf(lastWord)) + ' #$lastWord');
-
-                _hashtagsInputController.text =
-                    text.substring(0, text.indexOf(lastWord)) + ' #$lastWord';
-              }
-            }
           },
           // valueTransformer: (text) => num.tryParse(text),
           /*validator: FormBuilderValidators.compose([
