@@ -3,17 +3,17 @@ import 'package:demos/utils/constants.dart';
 import 'package:flutter/material.dart';
 
 class UserPicture extends StatelessWidget {
-  const UserPicture({Key? key, required this.url}) : super(key: key);
+  const UserPicture({Key? key, required this.url, this.size = TOP_BAR_AVATAR_SIZE}) : super(key: key);
 
   final String? url;
+  final double size;
 
   @override
   Widget build(BuildContext context) {
-    print(url);
     return CachedNetworkImage(
       imageUrl: url ?? 'null',
-      width: TOP_BAR_AVATAR_SIZE,
-      height: TOP_BAR_AVATAR_SIZE,
+      width: size,
+      height: size,
       imageBuilder: (context, imageProvider) => Container(
         decoration: BoxDecoration(
           shape: BoxShape.circle,
@@ -21,8 +21,8 @@ class UserPicture extends StatelessWidget {
               image: imageProvider, fit: BoxFit.contain),
         ),
       ),
-      placeholder: (context, url) => SizedBox(height: TOP_BAR_AVATAR_SIZE, width: TOP_BAR_AVATAR_SIZE,),
-      errorWidget: (context, url, error) => Icon(Icons.person, size: TOP_BAR_AVATAR_SIZE,),
+      placeholder: (context, url) => SizedBox(height: size, width: size,),
+      errorWidget: (context, url, error) => Icon(Icons.person, size: size,),
     );
   }
 }

@@ -1,5 +1,6 @@
 
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:demos/models/demos_user.dart';
 import 'package:demos/models/hashtag.dart';
 import 'package:demos/models/vote.dart';
@@ -17,13 +18,13 @@ class Pool {
 
   final String title;
 
-  @JsonKey(includeIfNull: false)
+  @JsonKey(toJson: _nullableToJson, includeIfNull: false)
   List<Choice>? choices;
 
-  @JsonKey(includeIfNull: false)
+  @JsonKey(toJson: _nullableToJson, includeIfNull: false)
   List<Vote>? votes;
 
-  @JsonKey(includeIfNull: false)
+  @JsonKey(toJson: _nullableToJson, includeIfNull: false)
   DemosUser? user;
 
   @JsonKey(fromJson: _decodeHashtags, includeIfNull: false)
@@ -42,19 +43,18 @@ class Pool {
   @JsonKey(fromJson: _fromJson, toJson: _toJson)
   final DateTime? endDate;
 
-  @JsonKey(toJson: null, includeIfNull: false)
+  @JsonKey(toJson: _toJson, includeIfNull: false)
   final DateTime? createdAt;
 
   @JsonKey(toJson: null, includeIfNull: false)
   final DateTime? updatedAt;
 
-  final int totalVotes;
-
   final String userId;
 
   final bool moderated;
 
-  final GeoJsonPoint? location;
+  final Map <String, dynamic>? location;
+  //final GeoJsonPoint? location;
 
   Pool(
       {required this.title,
@@ -73,15 +73,14 @@ class Pool {
       this.hashtags,
       this.location,
       this.isHidden = false,
-      this.moderated = false,
-      this.totalVotes = 0});
+      this.moderated = false});
 
   factory Pool.fromJson(Map<String, dynamic> json) => _$PoolFromJson(json);
   Map<String, dynamic> toJson() => _$PoolToJson(this);
 
   static DateTime? _fromJson(int? int) =>
       int != null ? DateTime.fromMillisecondsSinceEpoch(int) : null;
-  static int? _toJson(DateTime? time) => time?.millisecondsSinceEpoch;
+  static String? _toJson(DateTime? time) => time?.toIso8601String();
 
   static dynamic _nullableToJson(dynamic value){
     print('were using nullable on ${value.runtimeType}');

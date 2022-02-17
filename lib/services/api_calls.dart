@@ -1,15 +1,16 @@
-import 'dart:developer';
 
 import 'package:demos/models/choice.dart';
 import 'package:demos/models/hashtag.dart';
 import 'package:demos/models/pool.dart';
 import 'package:demos/models/pool_hashtag.dart';
 import 'package:demos/models/vote.dart';
-import 'package:demos/screens/filter/filter_screen.dart';
 import 'package:demos/services/graphql_requests_strings.dart';
 import 'package:demos/services/token_interceptor.dart';
 import 'package:demos/utils/constants.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:geojson/geojson.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geopoint/geopoint.dart';
 import 'package:hasura_connect/hasura_connect.dart';
 
 class ApiCalls {
@@ -21,15 +22,10 @@ class ApiCalls {
 
   static bool _isGettingPools = false;
 
-  static bool _hasCountryPools = true;
-
-  static int offset = 0;
-
   // Database methods
 
   static Future<Pool> createPool(
       {required Pool pool, required List<Choice> choices, List<Hashtag>? hashtags}) async {
-    print(hashtags);
 
     String addPoolMutation = '''
     mutation MyQuery(\$pool: pools_insert_input!, \$hashtags: [hashtags_insert_input!] = {}) {
@@ -74,10 +70,8 @@ class ApiCalls {
     List<dynamic> hashtagsIds =
       addPoolResponse['data']['insert_hashtags']['returning'].map((element)=> Hashtag.fromJson(element)).toList();
 
-    print('we have id $id');
     for (Choice choice in choices) {
       choice.poolId = id;
-      print(choice.toJson());
     }
 
     List<PoolHashtag> poolHashtags= [];
@@ -99,15 +93,13 @@ class ApiCalls {
       ..choices = choices;
   }
 
-
-
   static Future<ApiResponse> getNewPools(
-      {String? countryCode, String? languageCode, required String userId})async{
+      {String? countryCode, String? languageCode, String? userId, required int offset})async{
 
     List<Pool> pools = [];
-    if(_hasCountryPools){
+    if(countryCode != null){
       try {
-        pools = await _getNewPoolsByCountry(countryCode, userId);
+        pools = await _getNewPoolsByCountry(countryCode: countryCode, userId: userId, offset: offset);
       } catch (e) {
         print('error getting new pools by country: $e');
         return ApiResponse(apiResponseStatus: ApiResponseStatus.ERROR,
@@ -115,10 +107,9 @@ class ApiCalls {
       }
     }
 
-    if(pools.length < POOL_REQUEST_LIMIT){
-      _hasCountryPools = false;
+    if(pools.length < POOL_REQUEST_LIMIT && languageCode != null){
       try {
-        pools.addAll(await _getNewPoolsByLanguage(languageCode, userId));
+        pools.addAll(await _getNewPoolsByLanguage(languageCode: languageCode, userId: userId, offset: offset));
       } on Exception catch (e) {
         print('error getting new pools by language: $e');
         return ApiResponse(apiResponseStatus: ApiResponseStatus.ERROR,
@@ -126,48 +117,360 @@ class ApiCalls {
       }
     }
 
-    offset = offset + pools.length;
+    if(pools.length < POOL_REQUEST_LIMIT){
+      try {
+        pools.addAll(await _getNewPoolsNoFilter(userId: userId, offset: offset));
+      } on Exception catch (e) {
+        print('error getting new pools by language: $e');
+        return ApiResponse(apiResponseStatus: ApiResponseStatus.ERROR,
+            errorMessage: e.toString());
+      }
+    }
 
     return ApiResponse(apiResponseStatus: ApiResponseStatus.SUCCESS,
         data: pools);
   }
 
-  static Future<List<Pool>> _getNewPoolsByCountry(String? countryCode, String userId) async{
+  static Future<List<Pool>> _getNewPoolsByCountry(
+      {required String countryCode, String? userId, required int offset}) async{
     if(_isGettingPools) return [];
+
+    print('getting new by country with code: $countryCode');
 
     _isGettingPools = true;
 
     var queryResponse = await hasuraConnect
         .query(getNewPoolsByCountryQuery,
         variables: {
-          'countryCode': countryCode,
-          'userId': userId,
+          'countryCode': countryCode.toLowerCase(),
+          'userId': userId ?? '',
           'offset': offset,
-        })
-        .onError((error, stackTrace) {
-      print(error);
-    });
+          'limit': POOL_REQUEST_LIMIT,
+        });
+
+    print('getting new pools by country response is $queryResponse');
 
     _isGettingPools = false;
 
     return _processPoolQueryResponse(queryResponse);
   }
 
-  static Future<List<Pool>> _getNewPoolsByLanguage(String? languageCode, String userId) async{
+  static Future<List<Pool>> _getNewPoolsByLanguage(
+      {required String languageCode, String? userId, required offset}) async{
+    if(_isGettingPools) return [];
+
+    _isGettingPools = true;
+
+    print('getting new by language with code: $languageCode');
+
+    var queryResponse = await hasuraConnect
+        .query(getNewPoolsByLanguageQuery,
+        variables: {
+          'languageCode': languageCode.toLowerCase(),
+          'userId': userId ?? '',
+          'offset': offset,
+          'limit': POOL_REQUEST_LIMIT,
+        });
+
+
+
+    print('getting new pools by language response is $queryResponse');
+
+    _isGettingPools = false;
+
+    return _processPoolQueryResponse(queryResponse);
+  }
+
+  static Future<List<Pool>> _getNewPoolsNoFilter(
+      {String? userId, required offset}) async{
+    if(_isGettingPools) return [];
+
+    _isGettingPools = true;
+
+
+    var queryResponse = await hasuraConnect
+        .query(getNewPoolsNoFilterQuery,
+        variables: {
+          'userId': userId ?? '',
+          'offset': offset,
+          'limit': POOL_REQUEST_LIMIT,
+        });
+
+    _isGettingPools = false;
+
+    return _processPoolQueryResponse(queryResponse);
+  }
+
+  static Future<ApiResponse> getHotPools(
+      {String? countryCode, String? languageCode, String? userId, required int offset})async{
+
+    List<Pool> pools = [];
+    if(countryCode != null){
+      try {
+        pools = await _getHotPoolsByCountry(countryCode: countryCode, userId: userId, offset: offset);
+      } catch (e) {
+        print('error getting hot pools by country: $e');
+        return ApiResponse(apiResponseStatus: ApiResponseStatus.ERROR,
+            errorMessage: e.toString());
+      }
+    }
+
+    if(pools.length < POOL_REQUEST_LIMIT && languageCode != null){
+      try {
+        pools.addAll(await _getHotPoolsByLanguage(languageCode: languageCode, userId: userId, offset: offset));
+      } on Exception catch (e) {
+        print('error getting hot pools by language: $e');
+        return ApiResponse(apiResponseStatus: ApiResponseStatus.ERROR,
+            errorMessage: e.toString());
+      }
+    }
+
+    if(pools.length < POOL_REQUEST_LIMIT){
+      try {
+        pools.addAll(await _getHotPoolsNoFilter(userId: userId, offset: offset));
+      } on Exception catch (e) {
+        print('error getting hot pools by language: $e');
+        return ApiResponse(apiResponseStatus: ApiResponseStatus.ERROR,
+            errorMessage: e.toString());
+      }
+    }
+
+    return ApiResponse(apiResponseStatus: ApiResponseStatus.SUCCESS,
+        data: pools);
+  }
+
+  static Future<List<Pool>> _getHotPoolsByCountry(
+      {required String countryCode, String? userId, required int offset}) async{
+    if(_isGettingPools) return [];
+
+    print('getting new by country with code: $countryCode');
+
+    _isGettingPools = true;
+
+    var queryResponse = await hasuraConnect
+        .query(getNewPoolsByCountryQuery,
+        variables: {
+          'countryCode': countryCode.toLowerCase(),
+          'userId': userId ?? '',
+          'offset': offset,
+          'limit': POOL_REQUEST_LIMIT,
+        });
+
+    print('getting new pools by country response is $queryResponse');
+
+    _isGettingPools = false;
+
+    return _processPoolQueryResponse(queryResponse);
+  }
+
+  static Future<List<Pool>> _getHotPoolsByLanguage(
+      {required String languageCode, String? userId, required offset}) async{
+    if(_isGettingPools) return [];
+
+    _isGettingPools = true;
+
+    print('getting new by language with code: $languageCode');
+
+    var queryResponse = await hasuraConnect
+        .query(getNewPoolsByLanguageQuery,
+        variables: {
+          'languageCode': languageCode.toLowerCase(),
+          'userId': userId ?? '',
+          'offset': offset,
+          'limit': POOL_REQUEST_LIMIT,
+        });
+
+
+
+    print('getting new pools by language response is $queryResponse');
+
+    _isGettingPools = false;
+
+    return _processPoolQueryResponse(queryResponse);
+  }
+
+  static Future<List<Pool>> _getHotPoolsNoFilter(
+      {String? userId, required offset}) async{
+    if(_isGettingPools) return [];
+
+    _isGettingPools = true;
+
+
+    var queryResponse = await hasuraConnect
+        .query(getNewPoolsNoFilterQuery,
+        variables: {
+          'userId': userId ?? '',
+          'offset': offset,
+          'limit': POOL_REQUEST_LIMIT,
+        });
+
+    _isGettingPools = false;
+
+    return _processPoolQueryResponse(queryResponse).reversed.toList();
+  }
+
+  static Future<ApiResponse> getMyPools({required String userId, required int offset}) async{
+
+    try {
+      var pools = await _getPoolsByUserId(userId: userId, offset: offset);
+
+      return ApiResponse(apiResponseStatus: ApiResponseStatus.SUCCESS,
+          data: pools);
+    } catch (e) {
+      print('error getting my pools: $e');
+      return ApiResponse(apiResponseStatus: ApiResponseStatus.ERROR,
+          errorMessage: e.toString());
+    }
+
+  }
+
+  static Future<List<Pool>> _getPoolsByUserId({required String userId, required offset}) async{
     if(_isGettingPools) return [];
 
     _isGettingPools = true;
 
     var queryResponse = await hasuraConnect
-        .query(getNewPoolsByLanguageQuery,
+        .query(getMyPoolsQueryString,
         variables: {
-          'languageCode': languageCode,
           'userId': userId,
           'offset': offset,
-        })
-        .onError((error, stackTrace) {
-      print(error);
-    });
+          'limit': POOL_REQUEST_LIMIT,
+        });
+
+    _isGettingPools = false;
+
+    return _processPoolQueryResponse(queryResponse);
+  }
+
+  static Future<ApiResponse> getMyVotes({required String userId, required int offset}) async{
+
+    try {
+      var pools = await _getVotesByUserId(userId: userId, offset: offset);
+
+      return ApiResponse(apiResponseStatus: ApiResponseStatus.SUCCESS,
+          data: pools);
+    } catch (e) {
+      print('error getting my votes: $e');
+      return ApiResponse(apiResponseStatus: ApiResponseStatus.ERROR,
+          errorMessage: e.toString());
+    }
+
+  }
+
+  static Future<List<Pool>> _getVotesByUserId({required String userId, required offset}) async{
+    if(_isGettingPools) return [];
+
+    _isGettingPools = true;
+
+    var queryResponse = await hasuraConnect
+        .query(getMyVotesQueryString,
+        variables: {
+          'userId': userId,
+          'offset': offset,
+          'limit': POOL_REQUEST_LIMIT,
+        });
+
+    _isGettingPools = false;
+
+    return _processVotesQueryResponse(queryResponse);
+  }
+
+  static Future<ApiResponse> getGenericPoolSearch({String? userId, required String search, required int offset}) async{
+
+    try {
+      var pools = await _getSearchByGenericTerms(userId: userId, search: search, offset: offset);
+      return ApiResponse(apiResponseStatus: ApiResponseStatus.SUCCESS,
+          data: pools);
+    } catch (e) {
+      print('error getting my votes: $e');
+      return ApiResponse(apiResponseStatus: ApiResponseStatus.ERROR,
+          errorMessage: e.toString());
+    }
+
+  }
+
+  static Future<List<Pool>> _getSearchByGenericTerms(
+      {String? userId, required String search, required offset}) async{
+    if(_isGettingPools) return [];
+
+    _isGettingPools = true;
+
+    var queryResponse = await hasuraConnect
+        .query(getSearchString,
+        variables: {
+          'search': '%$search%',
+          'userId': userId ?? '',
+          'offset': offset,
+          'limit': POOL_REQUEST_LIMIT,
+        });
+
+    _isGettingPools = false;
+
+    return _processPoolQueryResponse(queryResponse);
+  }
+
+  static Future<ApiResponse> getClosestPools({String? userId, required Map<String, dynamic>? geoPoint, required offset}) async{
+
+    try {
+      var pools = await _getPoolsByLocation(userId: userId, offset: offset, geoPoint: geoPoint);
+      return ApiResponse(apiResponseStatus: ApiResponseStatus.SUCCESS,
+          data: pools);
+    } catch (e) {
+      print('error getting location pools: $e');
+      return ApiResponse(apiResponseStatus: ApiResponseStatus.ERROR,
+          errorMessage: e.toString());
+    }
+
+  }
+
+  static Future<List<Pool>> _getPoolsByLocation(
+      {String? userId, required Map<String, dynamic>? geoPoint, required offset}) async{
+    if(_isGettingPools) return [];
+
+    _isGettingPools = true;
+
+    var queryResponse = await hasuraConnect
+        .query(getClosestPoolsQuery,
+        variables: {
+          'from': geoPoint,
+          //'userId': userId ?? '',
+          'offset': offset,
+          'limit': POOL_REQUEST_LIMIT,
+        });
+
+    _isGettingPools = false;
+
+    return _processPoolQueryResponse(queryResponse);
+  }
+
+  static Future<ApiResponse> getHashtagPools({String? userId, required String hashtag, required offset}) async{
+
+    try {
+      var pools = await _getSearchByHashtag(userId: userId, hashtag: hashtag, offset: offset);
+      return ApiResponse(apiResponseStatus: ApiResponseStatus.SUCCESS,
+          data: pools);
+    } catch (e) {
+      print('error getting hashtags pools: $e');
+      return ApiResponse(apiResponseStatus: ApiResponseStatus.ERROR,
+          errorMessage: e.toString());
+    }
+
+  }
+
+  static Future<List<Pool>> _getSearchByHashtag(
+      {String? userId, required String hashtag, required offset}) async{
+    if(_isGettingPools) return [];
+
+    _isGettingPools = true;
+
+    var queryResponse = await hasuraConnect
+        .query(getPoolsByHashtagQuery,
+        variables: {
+          'hashtag': hashtag,
+          'userId': userId,
+          'offset': offset,
+          'limit': POOL_REQUEST_LIMIT,
+        });
 
     _isGettingPools = false;
 
@@ -180,73 +483,19 @@ class ApiCalls {
           .map((e) => Pool.fromJson(e))
           .toList();
       _isGettingPools = false;
-      return pools;
+      return pools.reversed.toList();
     }
     return [];
   }
 
-  static Future<List<Pool>> getPools(
-      {required Map<String, dynamic> filters, int offset = 0}) async {
-
-    if(_isGettingPools) return [];
-
-    _isGettingPools = true;
-
-
-
-    String getPoolsQuery = '''
-      query MyQuery
-        (        
-        ${_getCountryCodeParameterString(filters[COUNTRY_CODE_KEY])}
-        ${_getHashtagParameterString(filters[HASHTAG_KEY])}  
-        ${_getVoteFilterParameterString(filters[VOTE_FILTER_KEY] ?? VoteFilter.ALL)}        
-        )    
-       {
-        pools(    
-           limit: ${POOL_REQUEST_LIMIT}, offset: ${offset},      
-           ${_getWhereQueryString(filters)}
-           ${_getPoolOrderQueryString(filters[POOL_ORDER_KEY] ?? PoolOrder.NEW)}        
-           ) {
-              id
-              title
-              userId              
-              choices(order_by: {id: asc}){
-                title
-                poolId
-                id
-                nbrVotes
-              }
-              user {
-                displayName
-                profilePicUrl                
-              }
-              votes(where: {userId: {_eq: \$userId}}) {
-                choiceId
-              }
-              hashtags{
-                hashtag{
-                  id
-                  title
-                }
-              }              
-              }
-}
-    ''';
-
-    var queryResponse = await hasuraConnect
-        .query(getPoolsQuery, variables: _getVariablesMap(filters))
-        .onError((error, stackTrace) {
-      print(error);
-    });
-
+  static List<Pool> _processVotesQueryResponse(dynamic queryResponse){
     if (queryResponse != null && queryResponse['data'] != null) {
-      List<Pool> pools = (queryResponse['data']['pools'] as List)
-          .map((e) => Pool.fromJson(e))
+      List<Pool> pools = (queryResponse['data']['votes'] as List)
+          .map((e) => Pool.fromJson(e['pool']))
           .toList();
       _isGettingPools = false;
-      return pools;
+      return pools.reversed.toList();
     }
-    _isGettingPools = false;
     return [];
   }
 
@@ -255,20 +504,15 @@ class ApiCalls {
         Vote(userId: userId, choiceId: choice.id, poolId: choice.poolId);
 
     String addVoteQuery = r'''
-     mutation MyQuery($vote: votes_insert_input!, $choiceId: uuid!) {
+     mutation MyQuery($vote: votes_insert_input!) {
      insert_votes_one(object: $vote){
         id
-      }
-      update_choices(where: {id: {_eq: $choiceId}}, _inc: {nbrVotes: 1}) {
-        returning {
-          nbrVotes
-        }
       }
     }
     ''';
 
     var mutationResponse = await hasuraConnect.mutation(addVoteQuery,
-        variables: {'vote': vote.toJson(), 'choiceId': choice.id});
+        variables: {'vote': vote.toJson()});
 
     return true;
   }
@@ -297,118 +541,6 @@ class ApiCalls {
     }
   }
 
-  static Future<int?> getChoiceCount(Choice choice) async {
-    //return await Backendless.counters.of(choice.objectId!).getValue() ?? 0;
-  }
-
-  static String _getCountryCodeParameterString(String? countryCode) {
-    return countryCode != null ? "\$countryCode: String!," : "";
-  }
-
-  static String _getCountryCodeQueryString(String? countryCode) {
-    return countryCode != null
-        ? ',_and: {countryCode: {_eq: \$countryCode}'
-        : '';
-  }
-
-  static String _getHashtagParameterString(String? hashtag) {
-    return hashtag != null ? "\$hashtag: String!," : '';
-  }
-
-  static String _getHashtagCodeQueryString(String? hashtag) {
-    return hashtag != null ? ',_and: {hashtags: {title: {_in: \$hashtag}}' : '';
-  }
-
-  static String _getPoolOrderQueryString(PoolOrder poolOrder) {
-    switch (poolOrder) {
-      case PoolOrder.NEW:
-        return "order_by: {createdAt: desc},";
-      case PoolOrder.HOT:
-        return "order_by: {votes_aggregate: {count: asc}},";
-      case PoolOrder.CONTROVERSIAL:
-        return "order_by: {choices_aggregate: {variance: {nbrVotes: asc}}},";
-    }
-  }
-
-  static String _getVoteFilterParameterString(VoteFilter voteFilter) {
-    return "\$userId: String!,";
-  }
-
-  static String _getVoteFilterQueryString(VoteFilter? voteFilter) {
-    if(voteFilter == null)return '';
-    switch (voteFilter) {
-      case VoteFilter.ALL:
-        return '';
-      case VoteFilter.MY_VOTES:
-        return ',_and: {votes: {userId: {_eq: \$userId}}';
-      case VoteFilter.MY_POOLS:
-        return ',_and: {userId: {_eq: \$userId}';
-    }
-  }
-
-  static String _getPoolStateQueryString(PoolState poolState) {
-    switch (poolState) {
-      case PoolState.LIVE:
-        return 'where: {endDate: {_gt: "now()"}';
-      case PoolState.FINISHED:
-        return 'where: {endDate: {_lte: "now()"}';
-    }
-    ;
-  }
-
-  static String _getNonHiddenQueryString() {
-        return ', isHidden: {_eq: false}';
-  }
-
-  static String _getUserVoteQueryString() {
-    return 'votes(where: {userId: {_eq: \$userId}}) {choiceId}';
-  }
-
-  static String _getWhereQueryString(Map<String, dynamic> filters) {
-    String whereQuery = _getPoolStateQueryString(
-            filters[POOL_STATE_KEY] ?? PoolState.LIVE) + _getNonHiddenQueryString();
-
-    String endQuery = '}';
-
-    if(_getCountryCodeQueryString(filters[COUNTRY_CODE_KEY]).isNotEmpty){
-      whereQuery = whereQuery + _getCountryCodeQueryString(filters[COUNTRY_CODE_KEY]);
-      endQuery = endQuery + '}';
-    }
-
-    if(_getHashtagCodeQueryString(filters[HASHTAG_KEY]).isNotEmpty){
-      whereQuery = whereQuery + _getHashtagCodeQueryString(filters[HASHTAG_KEY]);
-      endQuery = endQuery + '}';
-    }
-
-    if(_getVoteFilterQueryString(filters[VOTE_FILTER_KEY]).isNotEmpty){
-      whereQuery = whereQuery + _getVoteFilterQueryString(filters[VOTE_FILTER_KEY]);
-      endQuery = endQuery + '}';
-    }
-
-    whereQuery = whereQuery + endQuery;
-    print(whereQuery);
-    return whereQuery;
-  }
-
-  static Map<String, dynamic> _getVariablesMap(Map<String, dynamic> map) {
-    Map<String, dynamic> variables = {};
-    if(map.containsKey(COUNTRY_CODE_KEY) && map[COUNTRY_CODE_KEY] != null){
-      variables[COUNTRY_CODE_KEY] = map[COUNTRY_CODE_KEY];
-    }
-    if(map.containsKey(HASHTAG_KEY) && map[HASHTAG_KEY] != null){
-      variables[HASHTAG_KEY] = map[HASHTAG_KEY];
-    }
-
-    variables[USER_ID_KEY] = map[USER_ID_KEY];
-
-    print('variables are $variables');
-    return variables;
-  }
-
-  static const USER_ID_FIELD = 'user';
-  static const CHOICE_ID_FIELD = 'choice';
-  static const CHOICES_FIELD = 'choices';
-  static const VOTES_FIELD = 'votes';
 }
 
 class ApiResponse{
@@ -417,6 +549,9 @@ class ApiResponse{
   final String? errorMessage;
 
   ApiResponse({required this.apiResponseStatus, this.data, this.errorMessage});
+
+  @override
+  String toString()=>'ApiResponse: {${apiResponseStatus.toString()}, $data, $errorMessage';
 
 }
 

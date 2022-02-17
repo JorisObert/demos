@@ -10,7 +10,9 @@ Choice _$ChoiceFromJson(Map<String, dynamic> json) => Choice(
       id: json['id'] as String?,
       poolId: json['poolId'] as String?,
       title: json['title'] as String,
-      nbrVotes: json['nbrVotes'] as int? ?? 0,
+      nbrVotes: json['votes_aggregate'] == null
+          ? 0
+          : Choice._getVoteCount(json['votes_aggregate']),
       createdAt: json['createdAt'] == null
           ? null
           : DateTime.parse(json['createdAt'] as String),
@@ -31,7 +33,7 @@ Map<String, dynamic> _$ChoiceToJson(Choice instance) {
   writeNotNull('id', instance.id);
   val['poolId'] = instance.poolId;
   val['title'] = instance.title;
-  val['nbrVotes'] = instance.nbrVotes;
+  val['votes_aggregate'] = instance.nbrVotes;
   writeNotNull('createdAt', instance.createdAt?.toIso8601String());
   writeNotNull('updatedAt', instance.updatedAt?.toIso8601String());
   return val;

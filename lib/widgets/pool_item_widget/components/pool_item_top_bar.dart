@@ -1,8 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:demos/models/pool.dart';
+import 'package:demos/screens/pools/deep_navigation_pool_screen.dart';
 import 'package:demos/utils/constants.dart';
 import 'package:demos/utils/util_general.dart';
 import 'package:demos/widgets/user_picture.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -20,13 +22,24 @@ class PoolItemTopBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              UserPicture(url: pool.user?.profilePicUrl),
-              SizedBox(width: 8.0,),
-              Text(pool.user!.displayName ?? '', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),),
-            ],
+          GestureDetector(
+            onTap: (){
+              Navigator.push(
+                context,
+                CupertinoPageRoute(
+                    builder: (context) => DeepNavigationPoolScreen(
+                      demosUser: pool.user,
+                    )),
+              );
+            },
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                UserPicture(url: pool.user?.profilePicUrl),
+                SizedBox(width: 8.0,),
+                Text(pool.user!.displayName ?? '', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),),
+              ],
+            ),
           ),
           pool.endDate != null && pool.endDate!.isAfter(DateTime.now()) ? Row(
             children: [

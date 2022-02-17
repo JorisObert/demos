@@ -31,8 +31,3 @@ DateTime dateTimeFromTimestring(String timestring) {
 String? dateTimeToTimestamp(DateTime? dateTime){
   return dateTime != null ? dateTime.toString() : null;
 }
-
-/*DemosUser decodeDemosUserFromJson(String jsonString){
-  print(jsonString);
-  return DemosUser.fromJson(jsonDecode(jsonString));
-}*/

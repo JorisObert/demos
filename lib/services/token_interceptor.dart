@@ -21,6 +21,14 @@ class TokenInterceptor extends InterceptorBase {
       try {
         print('we have client');
         request.headers["Authorization"] = "Bearer ${token.token}";
+
+        return request;
+      } catch (e) {
+        print('error in token inter $e');
+        return null;
+      }
+    }else{
+      try {
         return request;
       } catch (e) {
         return null;

@@ -1,15 +1,20 @@
+import 'dart:convert';
+
 import 'package:demos/models/choice.dart';
 import 'package:demos/models/pool.dart';
 import 'package:demos/providers/demos_user_provider.dart';
 import 'package:demos/providers/pool_provider.dart';
+import 'package:demos/widgets/auth_button.dart';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:provider/provider.dart';
+import 'package:collection/src/iterable_extensions.dart';
 
 class PoolBarList extends StatefulWidget {
   final Pool pool;
+  final Function(String) choiceClickedId;
 
-  PoolBarList({Key? key, required this.pool})
+  PoolBarList({Key? key, required this.pool, required this.choiceClickedId})
       : super(key: key);
 
   @override
@@ -60,16 +65,20 @@ class _PoolBarListState extends State<PoolBarList> {
       double percent = _getFlex(nbrVoters);
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0),
-        child: InkWell(
-          onTap: (){
-            print(hasVoted);
-            if(!hasVoted){
-              setState(() {
-                hasVoted = true;
-              });
-              context
-                  .read<PoolProvider>()
-                  .saveVote(widget.pool.choices![index], context.read<DemosUserProvider>().firebaseUser!.uid, widget.pool.id);
+        child: AuthButton(
+          authStatus: (status){
+            if(status != AuthStatus.LOGGED){
+
+            }else{
+              if(!hasVoted  && userChoiceId == null){
+                setState(() {
+                  hasVoted = true;
+                });
+                widget.choiceClickedId(widget.pool.choices![index].id!);
+                context
+                    .read<PoolProvider>()
+                    .saveVote(widget.pool.choices![index], context.read<DemosUserProvider>().firebaseUser!.uid);
+              }
             }
           },
           child: Stack(
@@ -80,7 +89,7 @@ class _PoolBarListState extends State<PoolBarList> {
                 animation: true,
                 animateFromLastPercent: true,
                 lineHeight: 28.0,
-                progressColor: Theme.of(context).colorScheme.secondary,
+                progressColor: _barColor(index),
                 percent: percent,
                 padding: const EdgeInsets.all(14.0),
               ),
@@ -110,6 +119,12 @@ class _PoolBarListState extends State<PoolBarList> {
     });
   }
 
+  String? get userChoiceId => widget.pool.votes?.firstWhereOrNull((element) => element.userId == context.read<DemosUserProvider>().user?.id)?.choiceId;
+
+   _barColor(int index){
+    String choiceId = widget.pool.choices![index].id!;
+    return userChoiceId != null && userChoiceId == choiceId ? Theme.of(context).colorScheme.secondary:Colors.grey.shade400;
+  }
   double _getFlex(int? value) {
     if (value == null) return 0.0;
     int total = widget.pool.choices!.fold(0, (int sum, item) => sum + (item.nbrVotes));

@@ -19,7 +19,8 @@ Pool _$PoolFromJson(Map<String, dynamic> json) => Pool(
       votes: (json['votes'] as List<dynamic>?)
           ?.map((e) => Vote.fromJson(e as Map<String, dynamic>))
           .toList(),
-      countryCode: json['countryCode'] as String? ?? 'EN',
+      countryCode: json['countryCode'] as String? ?? 'us',
+      languageCode: json['languageCode'] as String? ?? 'en',
       endDate: Pool._fromJson(json['endDate'] as int?),
       isPrivate: json['isPrivate'] as bool? ?? false,
       alert: json['alert'] as int? ?? 0,
@@ -30,9 +31,9 @@ Pool _$PoolFromJson(Map<String, dynamic> json) => Pool(
           ? null
           : DateTime.parse(json['updatedAt'] as String),
       hashtags: Pool._decodeHashtags(json['hashtags']),
+      location: json['location'] as Map<String, dynamic>?,
       isHidden: json['isHidden'] as bool? ?? false,
       moderated: json['moderated'] as bool? ?? false,
-      totalVotes: json['totalVotes'] as int? ?? 0,
     );
 
 Map<String, dynamic> _$PoolToJson(Pool instance) {
@@ -46,19 +47,20 @@ Map<String, dynamic> _$PoolToJson(Pool instance) {
 
   writeNotNull('id', instance.id);
   val['title'] = instance.title;
-  writeNotNull('choices', instance.choices?.map((e) => e.toJson()).toList());
-  writeNotNull('votes', instance.votes?.map((e) => e.toJson()).toList());
-  writeNotNull('user', instance.user?.toJson());
+  writeNotNull('choices', Pool._nullableToJson(instance.choices));
+  writeNotNull('votes', Pool._nullableToJson(instance.votes));
+  writeNotNull('user', Pool._nullableToJson(instance.user));
   writeNotNull('hashtags', instance.hashtags?.map((e) => e.toJson()).toList());
   val['countryCode'] = instance.countryCode;
+  val['languageCode'] = instance.languageCode;
   val['isPrivate'] = instance.isPrivate;
   val['alert'] = instance.alert;
   val['isHidden'] = instance.isHidden;
   val['endDate'] = Pool._toJson(instance.endDate);
-  writeNotNull('createdAt', instance.createdAt?.toIso8601String());
+  writeNotNull('createdAt', Pool._toJson(instance.createdAt));
   writeNotNull('updatedAt', instance.updatedAt?.toIso8601String());
-  val['totalVotes'] = instance.totalVotes;
   val['userId'] = instance.userId;
   val['moderated'] = instance.moderated;
+  val['location'] = instance.location;
   return val;
 }

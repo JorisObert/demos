@@ -1,15 +1,14 @@
-
 import 'package:demos/providers/demos_user_provider.dart';
-import 'package:demos/services/social_login.dart';
 import 'package:demos/widgets/app_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'package:provider/src/provider.dart';
 
 class LoginScreen extends StatelessWidget {
-  const LoginScreen({Key? key, required this.onClosed}) : super(key: key);
+  const LoginScreen({Key? key, required this.onClosed, required this.onLoggedIn}) : super(key: key);
 
   final VoidCallback onClosed;
+  final VoidCallback onLoggedIn;
 
   @override
   Widget build(BuildContext context) {
@@ -26,14 +25,8 @@ class LoginScreen extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      AppIcon(),
                       SizedBox(
                         width: 8.0,
-                      ),
-                      Text(
-                        'Create your pool',
-                        style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -48,39 +41,54 @@ class LoginScreen extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('Login to vote !', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 32),),
+                      Text(
+                        'Login to vote !',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 32),
+                      ),
                       _buttonSeparator,
                       Text('create an acount and make your voice count !'),
                       _buttonSeparator,
                       _buttonSeparator,
                       SignInButton(
                         Buttons.GoogleDark,
-                        onPressed: ()async{
-                          await context.read<DemosUserProvider>().loginUser(loginProvider: LoginProvider.GOOGLE);
+                        onPressed: () async {
+                          await context
+                              .read<DemosUserProvider>()
+                              .loginUser(loginProvider: LoginProvider.GOOGLE);
+                          onLoggedIn();
                         },
                       ),
                       _buttonSeparator,
                       SignInButton(
                         Buttons.AppleDark,
-                        onPressed: () async{
-                          context.read<DemosUserProvider>().loginUser(loginProvider: LoginProvider.APPLE);
+                        onPressed: () async {
+                          context
+                              .read<DemosUserProvider>()
+                              .loginUser(loginProvider: LoginProvider.APPLE);
+                          onLoggedIn();
                         },
                       ),
                       _buttonSeparator,
                       SignInButton(
                         Buttons.Twitter,
-                        onPressed: () async{
-                          context.read<DemosUserProvider>().loginUser(loginProvider: LoginProvider.TWITTER);
+                        onPressed: () async {
+                          context
+                              .read<DemosUserProvider>()
+                              .loginUser(loginProvider: LoginProvider.TWITTER);
+                          onLoggedIn();
                         },
                       ),
                       _buttonSeparator,
                       SignInButton(
                         Buttons.FacebookNew,
-                        onPressed: (){
-                          context.read<DemosUserProvider>().loginUser(loginProvider: LoginProvider.FACEBOOK);
+                        onPressed: () {
+                          context
+                              .read<DemosUserProvider>()
+                              .loginUser(loginProvider: LoginProvider.FACEBOOK);
+                          onLoggedIn();
                         },
                       ),
-
                     ],
                   ),
                 ),
@@ -90,10 +98,11 @@ class LoginScreen extends StatelessWidget {
         ),
       ),
     );
-
   }
 
-  Widget get _buttonSeparator{
-    return SizedBox(height: 16.0,);
+  Widget get _buttonSeparator {
+    return SizedBox(
+      height: 16.0,
+    );
   }
 }

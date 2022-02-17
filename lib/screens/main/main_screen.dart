@@ -1,19 +1,18 @@
-import 'package:auto_size_text/auto_size_text.dart';
-import 'package:demos/models/choice.dart';
-import 'package:demos/models/pool.dart';
+import 'dart:async';
+
 import 'package:demos/providers/demos_user_provider.dart';
 import 'package:demos/providers/pool_provider.dart';
-import 'package:demos/screens/filter/filter_screen.dart';
+import 'package:demos/screens/account/account_screen.dart';
 import 'package:demos/screens/login/login_screen.dart';
-import 'package:demos/screens/main/components/create_pool_dialog.dart';
+import 'package:demos/screens/create_pool/create_pool_screen.dart';
+import 'package:demos/screens/pools/deep_navigation_pool_screen.dart';
 import 'package:demos/screens/pools/pools_screen.dart';
-import 'package:demos/services/api_calls.dart';
-import 'package:demos/utils/constants.dart';
 import 'package:demos/widgets/app_logo.dart';
+import 'package:demos/widgets/auth_button.dart';
 import 'package:demos/widgets/user_picture.dart';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:provider/src/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
@@ -23,37 +22,30 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
-  int _pageIndex = 0;
-
-  late TabController _myTabController;
-
   late PanelController _panelController;
   late PanelController _loginPanelController;
 
   late AnimationController _animationController;
 
+  TextEditingController _searchController = TextEditingController();
+
+  bool _searchPanelVisible = false;
+
+  StreamController<FilterChoiceId> _controller = StreamController<FilterChoiceId>();
+
+  FilterChoice _currentFilterChoice = choices[0];
+
+
   @override
   void initState() {
     super.initState();
-    _myTabController = new TabController(
-      vsync: this,
-      length: 4,
-    );
+
     _panelController = PanelController();
     _loginPanelController = PanelController();
-    _myTabController.addListener(_handleTabSelection);
     _animationController = new AnimationController(
         vsync: this,
         duration: Duration(milliseconds: 300),
         animationBehavior: AnimationBehavior.preserve);
-  }
-
-  void _handleTabSelection() {
-    setState(() {
-      if (_pageIndex != _myTabController.index) {
-        _pageIndex = _myTabController.index;
-      }
-    });
   }
 
   @override
@@ -79,117 +71,137 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           ),
         ),
         actions: <Widget>[
-          PopupMenuButton<FilterChoice>(
-            onSelected: _handleClick,
-            color: Colors.black,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(
-                Radius.circular(4.0),
-              ),
-            ),
+          IconButton(
             icon: Icon(
-              Icons.place,
-              color: Theme.of(context).colorScheme.secondaryVariant,
+              Icons.search,
+              color: _searchPanelVisible ? Theme.of(context).colorScheme.secondaryVariant : Colors.white,
             ),
-            itemBuilder: (BuildContext context) {
-              return choices.map((FilterChoice choice) {
-                return PopupMenuItem<FilterChoice>(
-                  value: choice,
-                  child: Row(
-                    children: [
-                      Icon(choice.icon),
-                      SizedBox(
-                        width: 8.0,
-                      ),
-                      Text(
-                        choice.title,
-                        style: TextStyle(
-                            fontWeight: FontWeight.w600, fontSize: 13),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList();
+            onPressed: () {
+              setState(() {
+                _searchPanelVisible = !_searchPanelVisible;
+              });
             },
           ),
         ],
       ),
       body: Stack(
         children: [
-          TabBarView(
-            children: [
-              PoolsScreen(anonymousClick: () {
-                _loginPanelController.open();
-              }),
-              Container(),
-              CreatePoolScreen(),
-              Container(),
-            ],
-            controller: _myTabController,
-          ),
+          new PoolsScreen(
+              stream: _controller.stream,
+              anonymousClick: () {
+            _loginPanelController.open();
+          }),
+          _searchBar(),
           _loginPanel(),
         ],
       ),
       bottomNavigationBar: BottomAppBar(
           color: Colors.black,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.home,
-                    color: (_pageIndex == 0)
-                        ? Theme.of(context).colorScheme.secondaryVariant
-                        : Colors.white,
-                  ),
-                  onPressed: () {
-                    this._myTabController.animateTo(0,
-                        duration: const Duration(milliseconds: 500),
-                        curve: Curves.easeInOut);
-                  },
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    PopupMenuButton<FilterChoice>(
+                      onSelected: _handleClick,
+                      color: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(4.0),
+                        ),
+                      ),
+                      icon: Icon(_currentFilterChoice.icon),
+                      itemBuilder: (BuildContext context) {
+                        return choices.map((FilterChoice choice) {
+                          return PopupMenuItem<FilterChoice>(
+                            value: choice,
+                            child: Row(
+                              children: [
+                                Icon(choice.icon, color: _currentFilterChoice.filterChoiceId == choice.filterChoiceId ? Theme.of(context).colorScheme.secondaryVariant : Colors.white,),
+                                SizedBox(
+                                  width: 8.0,
+                                ),
+                                Text(
+                                  choice.title,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13,
+                                      color: _currentFilterChoice.filterChoiceId == choice.filterChoiceId ? Theme.of(context).colorScheme.secondaryVariant : Colors.white,),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList();
+                      },
+                    ),
+                    SizedBox(
+                      width: 32,
+                    ),
+                    AuthButton(
+                      authStatus: (status){
+                        switch(status){
+                          case AuthStatus.ANONYMOUS:
+                            _loginPanelController.open();
+                            break;
+                          case AuthStatus.LOGGED:
+                            Navigator.push(
+                              context,
+                              CupertinoPageRoute(
+                                  builder: (context) => AccountScreen()),
+                            );
+                            break;
+                        }
+                      },
+
+                        child: UserPicture(
+                            url: context
+                                .read<DemosUserProvider>()
+                                .user
+                                ?.profilePicUrl))
+                  ],
                 ),
-                IconButton(
-                  icon: Icon(
-                    Icons.search,
-                    color: (_pageIndex == 1)
-                        ? Theme.of(context).colorScheme.secondaryVariant
-                        : Colors.white,
-                  ),
-                  onPressed: () {
-                    this._myTabController.animateTo(1,
-                        duration: const Duration(milliseconds: 500),
-                        curve: Curves.easeInOut);
-                  },
-                ),
-                IconButton(
-                  icon: Icon(
-                    Icons.add,
-                    color: (_pageIndex == 2)
-                        ? Theme.of(context).colorScheme.secondaryVariant
-                        : Colors.white,
-                  ),
-                  onPressed: () {
-                    this._myTabController.animateTo(2,
-                        duration: const Duration(milliseconds: 500),
-                        curve: Curves.easeInOut);
-                  },
-                ),
-                GestureDetector(
-                    onTap: () {
-                      this._myTabController.animateTo(3,
-                          duration: const Duration(milliseconds: 500),
-                          curve: Curves.easeInOut);
+              ),
+              Positioned(
+                left: 0,
+                height: 64,
+                right: 0,
+                bottom: 16,
+                child: Center(
+                  child: AuthButton(
+                    authStatus: (authStatus){
+                      switch(authStatus){
+                        case AuthStatus.ANONYMOUS:
+                          _loginPanelController.open();
+                          break;
+                        case AuthStatus.LOGGED:
+                          Navigator.push(
+                            context,
+                            CupertinoPageRoute(
+                                builder: (context) => CreatePoolScreen()),
+                          );
+                      }
                     },
-                    child: UserPicture(
-                        url: context
-                            .read<DemosUserProvider>()
-                            .user
-                            ?.profilePicUrl))
-              ],
-            ),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+
+                        color: Theme.of(context).colorScheme.secondaryVariant,
+                      ),
+                      padding: EdgeInsets.all(16.0),
+                      child: Icon(
+                        Icons.add,
+                        color: Colors.white,
+                        size: 32,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           )),
     );
   }
@@ -206,6 +218,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       isDraggable: false,
       panel: LoginScreen(
         onClosed: () => _loginPanelController.close(),
+        onLoggedIn: ()=> _loginPanelController.close(),
       ),
       color: Colors.grey.shade800,
       minHeight: 0,
@@ -217,19 +230,116 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     );
   }
 
-  void _handleClick(FilterChoice filterChoice) {
+  Widget _searchBar() {
+    return Visibility(
+      visible: _searchPanelVisible,
+      child: Positioned.fill(
+        child: Column(
+          children: [
+            Container(
+              color: Colors.black,
+              padding: const EdgeInsets.fromLTRB(8.0, 16.0, 8.0, 16.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _searchController,
+                      decoration: InputDecoration(
+                        fillColor: Colors.white,
+                        hintText: 'hashtag, pool, username...',
+                        suffix: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                CupertinoPageRoute(
+                                    builder: (context) => DeepNavigationPoolScreen(
+                                      searchTerms: _searchController.text,
+                                    )),
+                              );
+                            },
+                            child: Text(
+                              'Search',
+                              style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.secondaryVariant),
+                            )),
+                        filled: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(100.0),
+                        ),
+                        contentPadding:
+                            const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 0.0),
+                      ),
+                      cursorColor: Theme.of(context).colorScheme.secondaryVariant,
+                      style: TextStyle(color: Colors.grey.shade900),
+                      autofocus: true,
+                    ),
+                  ),
+                  IconButton(onPressed: (){
+                    setState(() {
+                      _searchPanelVisible = false;
+                    });
+                  }, icon: Icon(Icons.close))
+                ],
+              ),
+            ),
+            Expanded(
+                child: Container(
+              color: Colors.black87,
+            ))
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _handleClick(FilterChoice filterChoice) async{
     switch (filterChoice.filterChoiceId) {
       case FilterChoiceId.NEW:
-        // TODO: Handle this case.
+        setState(() {
+          _currentFilterChoice = choices[0];
+          _controller.add(FilterChoiceId.NEW);
+        });
+        break;
+      case FilterChoiceId.HOT:
+        setState(() {
+          _currentFilterChoice = choices[1];
+          _controller.add(FilterChoiceId.HOT);
+        });
         break;
       case FilterChoiceId.MY_VOTES:
-        // TODO: Handle this case.
+        setState(() {
+          _currentFilterChoice = choices[2];
+          _controller.add(FilterChoiceId.MY_VOTES);
+        });
         break;
       case FilterChoiceId.MY_POOLS:
-        // TODO: Handle this case.
+        setState(() {
+          _currentFilterChoice = choices[3];
+          _controller.add(FilterChoiceId.MY_POOLS);
+        });
         break;
+
       case FilterChoiceId.CLOSE:
-        // TODO: Handle this case.
+        try{
+          if(await context.read<PoolProvider>().getPosition() != null){
+            setState(() {
+              _currentFilterChoice = choices[4];
+              _controller.add(FilterChoiceId.CLOSE);
+            });
+            break;
+          }else{
+            const snackBar = SnackBar(
+              content: Text('Unable to get location'),
+            );
+            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          }
+        }catch(e){
+          const snackBar = SnackBar(
+            content: Text('Unable to get location'),
+          );
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        }
         break;
     }
   }
@@ -250,7 +360,7 @@ List<FilterChoice> choices = <FilterChoice>[
       icon: Icons.auto_awesome,
       filterChoiceId: FilterChoiceId.NEW),
   FilterChoice(
-      title: 'Hot', icon: Icons.whatshot, filterChoiceId: FilterChoiceId.NEW),
+      title: 'Hot', icon: Icons.whatshot, filterChoiceId: FilterChoiceId.HOT),
   FilterChoice(
       title: 'My votes',
       icon: Icons.person,
@@ -263,6 +373,7 @@ List<FilterChoice> choices = <FilterChoice>[
       title: 'Close to me',
       icon: Icons.place,
       filterChoiceId: FilterChoiceId.CLOSE),
+
 ];
 
-enum FilterChoiceId { NEW, MY_VOTES, MY_POOLS, CLOSE }
+enum FilterChoiceId { NEW, HOT, MY_VOTES, MY_POOLS, CLOSE}

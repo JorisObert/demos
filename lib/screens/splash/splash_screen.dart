@@ -1,12 +1,7 @@
-import 'package:auto_size_text/auto_size_text.dart';
-import 'package:demos/providers/demos_user_provider.dart';
 import 'package:demos/screens/main/main_screen.dart';
-import 'package:demos/services/api_calls.dart';
 import 'package:demos/widgets/app_logo.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/src/provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -41,7 +36,6 @@ class _SplashScreenState extends State<SplashScreen> {
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -61,14 +55,19 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            AppLogo(size: 36,),
+            AppLogo(
+              size: 36,
+            ),
             SizedBox(
               height: 16.0,
             ),
-            Text('Let your voice be heard !', style: GoogleFonts.expletusSans(
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
-            ),),
+            Text(
+              'Let your voice be heard !',
+              style: GoogleFonts.expletusSans(
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+            ),
           ],
         ),
       ),

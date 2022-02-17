@@ -1,140 +1,40 @@
 {
   "project_info": {
-    "project_number": "97086938160",
-    "firebase_url": "https://food-truck-app-38e98.firebaseio.com",
-    "project_id": "food-truck-app-38e98",
-    "storage_bucket": "food-truck-app-38e98.appspot.com"
+    "project_number": "491783528178",
+    "project_id": "demos-3f19e",
+    "storage_bucket": "demos-3f19e.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:97086938160:android:dc19fdf163a4a7fc40a1f5",
+        "mobilesdk_app_id": "1:491783528178:android:7ebd79c98bb5064c057a6b",
         "android_client_info": {
           "package_name": "com.goodvibeslabs.demos"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "491783528178-bcfg0irfdj1h71qeag3pmdd6gvklfbqp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyBY09X6n8mDdY6vcyMqw_ySJ5ASWIdvbiw"
+          "current_key": "AIzaSyAi_eQO-kdhTqtz8wUOrFYyk4rc1Oy8AKU"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "97086938160-1901i4tgmasc0hat09ems2settbo910e.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.goodvibeslabs.foodTruckFinder"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:97086938160:android:62c729058c268e3840a1f5",
-        "android_client_info": {
-          "package_name": "com.goodvibeslabs.fily_for_pros"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyBY09X6n8mDdY6vcyMqw_ySJ5ASWIdvbiw"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
+              "client_id": "491783528178-bcfg0irfdj1h71qeag3pmdd6gvklfbqp.apps.googleusercontent.com",
+              "client_type": 3
+            },
             {
-              "client_id": "97086938160-1901i4tgmasc0hat09ems2settbo910e.apps.googleusercontent.com",
+              "client_id": "491783528178-lrh7iufojpjpvkm1kf474nvlfuhdh590.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.goodvibeslabs.foodTruckFinder"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:97086938160:android:10d8431d1f3c64bf40a1f5",
-        "android_client_info": {
-          "package_name": "com.goodvibeslabs.food_truck_finder"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyBY09X6n8mDdY6vcyMqw_ySJ5ASWIdvbiw"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "97086938160-1901i4tgmasc0hat09ems2settbo910e.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.goodvibeslabs.foodTruckFinder"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:97086938160:android:601078fe63b71fbd40a1f5",
-        "android_client_info": {
-          "package_name": "com.goodvibeslabs.food_truck_professional"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyBY09X6n8mDdY6vcyMqw_ySJ5ASWIdvbiw"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "97086938160-1901i4tgmasc0hat09ems2settbo910e.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.goodvibeslabs.foodTruckFinder"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:97086938160:android:5798454f9d65ac6a40a1f5",
-        "android_client_info": {
-          "package_name": "com.goodvibeslabs.loyalty_app"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyBY09X6n8mDdY6vcyMqw_ySJ5ASWIdvbiw"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "97086938160-1901i4tgmasc0hat09ems2settbo910e.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.goodvibeslabs.foodTruckFinder"
+                "bundle_id": "com.goodvibeslabs.demos-app"
               }
             }
           ]

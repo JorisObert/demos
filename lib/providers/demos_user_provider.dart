@@ -19,12 +19,14 @@ class DemosUserProvider extends ChangeNotifier {
 
   DemosUser? get user => _user;
 
+  AuthStatus get authStatus => (_firebaseUser?.isAnonymous ?? true) ? AuthStatus.ANONYMOUS:AuthStatus.LOGGED;
+
   bool get isLoggedIn => !(_firebaseUser?.isAnonymous ?? true);
 
   FirebaseFunctions functions = FirebaseFunctions.instance;
 
 
-  loginUser({required LoginProvider loginProvider})async {
+  Future<User?> loginUser({required LoginProvider loginProvider})async {
 
     UserCredential? userCredential;
     switch(loginProvider){
@@ -44,13 +46,9 @@ class DemosUserProvider extends ChangeNotifier {
 
     _firebaseUser = userCredential.user;
 
-    print('we have user ${_firebaseUser?.uid ?? 'pas duser c nul'}');
+    notifyListeners();
 
-    if(_firebaseUser != null){
-      //var result = await setUpCustomClaims();
-      //print(result);
-      //ApiCalls.setUpClient(await _firebaseUser!.getIdTokenResult(true));
-    }
+    return _firebaseUser;
 
   }
 
@@ -79,6 +77,12 @@ class DemosUserProvider extends ChangeNotifier {
 
   }
 
+  Future<void> logoutUser() async{
+    await FirebaseAuth.instance.signOut();
+  }
+
 }
 
 enum LoginProvider{GOOGLE, APPLE, TWITTER, FACEBOOK}
+
+enum AuthStatus{ANONYMOUS, LOGGED}

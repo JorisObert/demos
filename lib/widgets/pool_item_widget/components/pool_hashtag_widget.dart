@@ -1,7 +1,6 @@
-import 'dart:convert';
-
 import 'package:demos/models/hashtag.dart';
-import 'package:demos/screens/filter/filter_screen.dart';
+import 'package:demos/screens/pools/deep_navigation_pool_screen.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class PoolHashtagsWidget extends StatefulWidget {
@@ -36,7 +35,13 @@ class _PoolHashtagsWidgetState extends State<PoolHashtagsWidget> {
   Widget hashtagItem(Hashtag hashtag) {
     return OutlinedButton(
       onPressed: () {
-        print('hashtag clicked');
+        Navigator.push(
+          context,
+          CupertinoPageRoute(
+              builder: (context) => DeepNavigationPoolScreen(
+                hashtag: hashtag.title,
+              )),
+        );
       },
 
       style: OutlinedButton.styleFrom(

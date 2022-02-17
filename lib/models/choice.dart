@@ -11,6 +11,7 @@ class Choice {
 
   final String title;
 
+  @JsonKey(name: 'votes_aggregate', fromJson: _getVoteCount)
   int nbrVotes;
 
   @JsonKey(toJson: null, includeIfNull: false)
@@ -24,4 +25,6 @@ class Choice {
 
   factory Choice.fromJson( Map<String, dynamic> json) => _$ChoiceFromJson(json);
   Map<String, dynamic> toJson() => _$ChoiceToJson(this);
+
+  static int _getVoteCount(dynamic data)=> data['aggregate']['count'];
 }
