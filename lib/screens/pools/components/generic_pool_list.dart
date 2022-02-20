@@ -8,6 +8,7 @@ import 'package:demos/services/api_calls.dart';
 import 'package:demos/widgets/pool_item_widget/pool_item.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/src/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
@@ -34,6 +35,32 @@ class _GenericPoolListState extends State<GenericPoolList> {
 
   bool _hasNoPools = false;
 
+  final NativeAd myNative = NativeAd(
+    adUnitId: 'ca-app-pub-3940256099942544/3986624511',
+    factoryId: 'adFactoryExample',
+    request: AdRequest(),
+    listener: NativeAdListener(),
+  );
+
+  final NativeAdListener listener = NativeAdListener(
+    // Called when an ad is successfully received.
+    onAdLoaded: (Ad ad) => print('Ad loaded.'),
+    // Called when an ad request failed.
+    onAdFailedToLoad: (Ad ad, LoadAdError error) {
+      // Dispose the ad here to free resources.
+      ad.dispose();
+      print('Ad failed to load: $error');
+    },
+    // Called when an ad opens an overlay that covers the screen.
+    onAdOpened: (Ad ad) => print('Ad opened.'),
+    // Called when an ad removes an overlay that covers the screen.
+    onAdClosed: (Ad ad) => print('Ad closed.'),
+    // Called when an impression occurs on the ad.
+    onAdImpression: (Ad ad) => print('Ad impression.'),
+    // Called when a click is recorded for a NativeAd.
+    onNativeAdClicked: (NativeAd ad) => print('Ad clicked.'),
+  );
+
   @override
   void initState() {
     widget.stream.listen((filterChoiceId) {
@@ -48,6 +75,7 @@ class _GenericPoolListState extends State<GenericPoolList> {
         _isLastPage = _pageController.page == _pools.length - 1;
       });
     });
+    myNative.load();
     super.initState();
   }
 

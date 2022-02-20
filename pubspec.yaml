@@ -35,14 +35,20 @@ dependencies:
   cloud_firestore: ^3.1.1
   firebase_analytics: ^9.0.4
 
+  google_mobile_ads: ^1.1.0
+
   hasura_connect: ^4.0.0+2
   graphql_flutter: ^5.0.0
 
-  google_sign_in: ^5.2.1
+  google_sign_in: ^5.2.4
   flutter_facebook_auth: ^3.5.6+3
-  sign_in_with_apple: ^3.3.0
   twitter_login: ^4.0.1
   crypto: ^3.0.1
+  sign_in_with_apple:
+    git:
+      url: git://github.com/aboutyou/dart_packages.git
+      ref: 31b5387f2a4a17aa06e00ae385d65abcb2608850
+      path: packages/sign_in_with_apple/sign_in_with_apple
 
   geolocator: ^8.1.1
   geojson: ^1.0.0
